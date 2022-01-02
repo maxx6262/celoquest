@@ -6,7 +6,7 @@ import CeloquestAbi from '../contract/Celoquest.abi.json'
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const CeloQuestContractAddress = "0x41fC4138799be4Fec40E6ae8D8e92268c562d1c8" +
+const CeloQuestContractAddress = "0x9F5c807341161d4641eB81CFc4aF5Dae2Ea14C6E"
     ""
 let kit
 let contract
@@ -33,6 +33,19 @@ const connectCeloWallet = async function () {
         }
     } else {
         notification("⚠️ Please install the CeloExtensionWallet.")
+    }
+}
+
+const getQuests  = async function() {
+    const _questsLength = await contract.methods.getNbQuests().call()
+    const _quests = []
+    for (let i = 1 ; i < _questsLength ; i++) {
+        let _quest = new Promise(async (resolve, reject) => {
+            let p = await contract.methods.getQuest(i).call()
+            resolve( {
+                id:
+            })
+        })
     }
 }
 

@@ -28,6 +28,7 @@ interface IERC20Token {
 contract Celoquest {
     uint    internal            nbQuests            =   0;
     uint    internal            nbContributions     =   0;
+    uint    internal            nbUsers             =   0;
     address internal            cUsdTokenAddress    = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
 
     address payable internal    owner;
@@ -136,6 +137,10 @@ contract Celoquest {
         _;
     }
 
+    function getNbUsers() public view returns(uint) {
+        return nbUsers;
+    }
+
     /** * @param _newPseudo : User pseudo
         * @dev User can choose a pseudo to display on Platform
         *   => if newUser : get NewUserInitialBalance
@@ -146,6 +151,7 @@ contract Celoquest {
         if (_userStoredPseudoBytes.length == 0) {
             //isNewUser => mint InitialUserTokenBalance
             _mintToken(msg.sender, initialUserTokenBalance);
+            nbUsers++;
         }
         userPseudo[msg.sender] = _newPseudo;
     }
@@ -180,6 +186,10 @@ contract Celoquest {
     mapping(uint => Contribution) contributions;
 
     event NewContribution(uint questId, address payable owner, uint contributionId);
+
+    function getNbContributions() public view returns(uint) {
+        return nbContributions;
+    }
 
     /** * @param _contributionId : id of contribution
         * @dev Return Contribution data
@@ -228,6 +238,10 @@ contract Celoquest {
     event NewVote(uint questId, uint contributionId, address userAddress);
     event NewRewardPayment(address payable winnerAddress, uint questId, uint questTokenAmount, uint cUsdAmount);
 
+    function getNbQuests() public view returns(uint) {
+        return nbQuests;
+    }
+
     /** * @param _content is Quest explanation/description
         * @param _cUsdReward  is cUsd reward amount Quest's owner will pay to winner
         * @param _questTokenReward is QuestToken reward amount Quest's owner will pay to winner
@@ -243,7 +257,6 @@ contract Celoquest {
         require(tokenBalance[msg.sender] >= _questTokenReward, "QuestToken balance too low");
         require(IERC20Token(cUsdTokenAddress).transferFrom(msg.sender, payable(address(this)), _cUsdReward), "Error during cUsd transaction");
         _transferQuestTokenFrom(msg.sender, address(this), _questTokenReward);
-        nbQuests++;
         Quest storage _newQuest     =   quests[nbQuests];
         _newQuest.owner             =   msg.sender;
         _newQuest.content           =   _content;
@@ -254,6 +267,7 @@ contract Celoquest {
         _newQuest.nbContributions   =   0;
         userQuestsCount[msg.sender]++;
         emit NewQuest(msg.sender, _content, _cUsdReward, _questTokenReward, _newQuest.deadLine);
+        nbQuests++;
     }
     //Get all Quest data
     function getQuest(uint _questId) public view returns (
@@ -289,7 +303,6 @@ contract Celoquest {
     function createContribution(uint _questId, string memory _content)
     external onlyUser(msg.sender) {
         require(!(quests[_questId].userContribution[msg.sender] > 0 ), "User already contribute to Quest");
-        nbContributions++;
         contributions[nbContributions] = Contribution(
             _questId,
             payable(msg.sender),
@@ -299,19 +312,23 @@ contract Celoquest {
         quests[_questId].contributions[quests[_questId].nbContributions] = nbContributions;
         quests[_questId].userContribution[msg.sender] = nbContributions;
         userContributionsCount[msg.sender]++;
+        nbContributions++;
     }
 
     function newVote(uint _contributionId) external onlyUser(msg.sender) {
         require(_contributionId < nbContributions, "Contribution not found");
-        require(quests[contributions[_contributionId].questId].deadLine + 1 days < block.timestamp,
+        require(quests[contributions[_contributionId].questId].deadLine < block.timestamp + 1 days,
             "Vote time ended for this Quest");
         require(!(contributions[_contributionId].owner == msg.sender),
             "User can't vote his owned contributions");
         uint _questId = contributions[_contributionId].questId;
         if (!(quests[_questId].userVote[msg.sender] > 0)) {
             quests[_questId].nbVotes++;
+        } else {
+            contributions[quests[_questId].userVote[msg.sender]].nbVotes--;
         }
         quests[_questId].userVote[msg.sender] = _contributionId;
+        contributions[_contributionId].nbVotes++;
         emit NewVote(_questId, _contributionId, msg.sender);
     }
 
