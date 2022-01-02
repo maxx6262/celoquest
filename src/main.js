@@ -1,12 +1,13 @@
 import Web3 from 'web3'
 import newKitFromWeb3 from '@celo/contractkit'
 import BigNumber from 'bignumber.js'
-import CelobookAbi from '../contract/Celobook.abi.json'
+import CeloquestAbi from '../contract/Celoquest.abi.json'
 
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const CelobookContractAddress = "0x61CC05C8f69C167a234Fe61475AD5c4b284785Ed"
+const CeloQuestContractAddress = "0x41fC4138799be4Fec40E6ae8D8e92268c562d1c8" +
+    ""
 let kit
 let contract
 let user

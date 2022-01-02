@@ -143,7 +143,7 @@ contract Celoquest {
     function setPseudo(string memory _newPseudo) external {
         require(bytes(_newPseudo).length > 0, "Pseudo can't be empty");
         bytes memory _userStoredPseudoBytes = bytes(userPseudo[msg.sender]);
-        if (_userStoredPseudoBytes.length > 0) {
+        if (_userStoredPseudoBytes.length == 0) {
             //isNewUser => mint InitialUserTokenBalance
             _mintToken(msg.sender, initialUserTokenBalance);
         }
