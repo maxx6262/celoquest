@@ -1,7 +1,7 @@
 import Web3 from 'web3'
-import { newKitFromWeb3 } from '@celo/contractkit'
+import newKitFromWeb3 from '@celo/contractkit'
 import BigNumber from 'bignumber.js'
-import * as CelobookAbi from '../contract/Celobook.abi.json'
+import CelobookAbi from '../contract/Celobook.abi.json'
 
 const ERC20_DECIMALS = 18
 
@@ -25,7 +25,7 @@ const connectCeloWallet = async function () {
             const accounts = await kit.web3.eth.getAccounts()
             kit.defaultAccount = accounts[0]
 
-            contract = new kit.web3.eth.Contract(CelobookAbi, CelobookContractAddress)
+            contract = new web3.eth.Contract(CelobookAbi, CelobookContractAddress)
 
         } catch (error) {
             notification(`⚠️ ${error}.`)
@@ -73,20 +73,20 @@ const getUser = async function() {
 
 
 
-const getBalance = async function () {
+const getBalance = async function() {
     const totalBalance = await kit.getTotalBalance(kit.defaultAccount)
     //const cUSDBalance = 10;//totalBalance.cUSD.shiftedBy(-ERC20_DECIMALS).toFixed(2)
-    const likeBalance = await contract.methods.getlikeBalance(kit.defaultAccount).call()
-    document.querySelector("#balance").textContent = likeBalance
+    const likeBalance = await contract.methods.getLikeBalance(kit.defaultAccount).call()
+    document.querySelector("#balance").textContent = likeBalance / (10 ** 18)
 }
 
 function renderPosts() {
-    document.getElementById("celobook").innerHTML = ""
+    document.getElementById("celoquest").innerHTML = ""
     posts.forEach((_post) => {
         const newDiv = document.createElement("div")
         newDiv.className = "col-md-4"
         newDiv.innerHTML = postTemplate(_post)
-        document.getElementById("celobook").appendChild(newDiv)
+        document.getElementById("celoquest").appendChild(newDiv)
     })
 }
 
@@ -185,7 +185,7 @@ document
         renderPosts()
     })
 
-document.querySelector("#celobook").addEventListener("click", (e) => {
+document.querySelector("#celoquest").addEventListener("click", (e) => {
     if(e.target.className.includes("likeBtn")) {
         const index = e.target.id
         try {
@@ -201,7 +201,7 @@ document.querySelector("#celobook").addEventListener("click", (e) => {
     }
 })
 
-document.querySelector("#celobook").addEventListener("click", (e) => {
+document.querySelector("#celoquest").addEventListener("click", (e) => {
     if(e.target.className.includes("buyBtn")) {
         const index = e.target.id
         try {
@@ -217,5 +217,5 @@ document.querySelector("#celobook").addEventListener("click", (e) => {
     }
 })
 
-getUser()
-getPosts()
+getUser
+getPosts

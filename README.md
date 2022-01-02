@@ -1,3 +1,9 @@
+<h1> CeloQuest </h1>
+<h4> A blockchain social media </h4>
+<p>
+Get rewarded answering/contribution by community members.
+Be rewarded by posting best contribution on the quest event.
+</p>
 # Install
 
 ```
@@ -10,7 +16,7 @@ or
 
 ```
 
-yarn install
+yarn cinstall
 
 ```
 
