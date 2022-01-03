@@ -1,9 +1,33 @@
-<h1> CeloQuest </h1>
-<h4> A blockchain social media </h4>
-<p>
-Get rewarded answering/contribution by community members.
-Be rewarded by posting best contribution on the quest event.
-</p>
+Rewarding contributions protocol
+by Maxime Lecoustre
+Global
+Description
+Updates0
+Donations
+A blockchain social media to be involved/helped about any subject
+
+
+Get answers/contribution by community members. Be rewarded by posting best contribution on the quest event.
+
+
+
+
+
+User can post Rewarded Quests with deadline and fixed rewards
+All users can post their contributions on platform to help Quest's owner to get answer or to contribute by making interesting contributions to the project.
+All users can vote for contribution they think the more rewardable. 
+Votation ends 1 day after contribution time
+Quest's owner being also funder has special big vote counting for 25/33 % of total votation
+Best contributors get their rewards
+
+
+All auctions are stored into Smart Contract, quest's owner can't make propositions and users can't vote for their owned propositions.
+
+All auctions performed build a trustscore with minting of token to show their contribution's level of project.
+
+
+
+Currently building POC on Celo blockchain (<a href="https://github.com/maxx6262/CeloQuest"> Gitbub rep here </a>
 # Install 
 
 ```
