@@ -6,12 +6,12 @@ import CeloquestAbi from '../contract/Celoquest.abi.json'
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const CeloQuestContractAddress = "0x9F5c807341161d4641eB81CFc4aF5Dae2Ea14C6E"
-    ""
+const CeloQuestContractAddress = "0xe2387112092BBb4AcBBC648736d7E7f3BaD55c2b"
 let kit
 let contract
 let user
-let posts = []
+let quests = []
+let contributions = []
 
 const connectCeloWallet = async function () {
     if (window.celo) {
@@ -43,43 +43,30 @@ const getQuests  = async function() {
         let _quest = new Promise(async (resolve, reject) => {
             let p = await contract.methods.getQuest(i).call()
             resolve( {
-                id:
+                id:                     i,
+                owner:                  p[0],
+                content:                p[1],
+                cUsdReward:             p[2],
+                questTokenReward:       p[3],
+                nbContributions:        p[4],
+                isActive:               p[5],
             })
         })
+        _quests.push(_quest)
     }
-}
-
-const getPosts   = async  function() {
-    const _postsLength = await contract.methods.getNbPosts().call()
-    const _posts = []
-    for (let i = 0 ; i < _postsLength ; i++) {
-        let _post = new Promise(async  (resolve, reject) => {
-            let p = await contract.methods.getPost(i).call()
-            resolve({
-                id:         i,
-                title:      p[0],
-                content:    p[1],
-                nbLikes:    p[2],
-                price:      p[3],
-                owner:      p[4],
-            })
-        })
-        _posts.push(_post)
-    }
-    posts = await Promise.all(_posts)
-    renderPosts()
+    quests = await Promise.all(_quests)
+    renderQuests()
 }
 
 const getUser = async function() {
     let _user = new Promise(async (resolve, reject) => {
         let p = await contract.methods.readUser(kit.defaultAccount).call()
         resolve({
-            address: kit.defaultAccount,
-            pseudo: p[0],
-            nbPosts: p[1],
-            nbLikes: p[2],
-            canLike: p[3],
-            CBTBalance: p[4],
+            address:         kit.defaultAccount,
+            pseudo:          p[0],
+            nbQuests:        p[1],
+            nbContributions: p[2],
+            CQTBalance:      p[4],
         })
     })
     user = await Promise.all(_user)
@@ -89,29 +76,30 @@ const getUser = async function() {
 
 const getBalance = async function() {
     const totalBalance = await kit.getTotalBalance(kit.defaultAccount)
-    //const cUSDBalance = 10;//totalBalance.cUSD.shiftedBy(-ERC20_DECIMALS).toFixed(2)
-    const likeBalance = await contract.methods.getLikeBalance(kit.defaultAccount).call()
-    document.querySelector("#balance").textContent = likeBalance / (10 ** 18)
+    const cUSDBalance  = totalBalance.cUSD.shiftedBy(-ERC20_DECIMALS).toFixed(2)
+    const CQTBalance   = await contract.methods.questTokenBalanceOf(kit.defaultAccount).call()
+    document.querySelector("#cUsdbalance").textContent = cUSDBalance
+    document.querySelector("#CQTBalance").textContent   = CQTBalance
 }
 
-function renderPosts() {
+function renderQuests() {
     document.getElementById("celoquest").innerHTML = ""
-    posts.forEach((_post) => {
+    quests.forEach((_quest) => {
         const newDiv = document.createElement("div")
         newDiv.className = "col-md-4"
-        newDiv.innerHTML = postTemplate(_post)
-        document.getElementById("celoquest").appendChild(newDiv)
+        newDiv.innerHTML = questTemplate(_quest)
+        document.getElementById('celoquest').appendChild(newDiv)
     })
 }
 
-function postTemplate(_post) {
+function questTemplate(_quest) {
     let rep = `
     <div class="card mb-4">
       <div class="card-body text-left p-4 position-relative">
         <div class="translate-middle-y position-absolute top-0">
-        ${identiconTemplate(_post.owner)}
+        ${identiconTemplate(_quest.owner)}
         </div>
-        <h2 class="card-title fs-4 fw-bold mt-2">${_post.title}</h2>
+        <h2 class="card-title fs-4 fw-bold mt-2">${_post.id}</h2>
         <p class="card-text mb-4" style="min-height: 82px">
           ${_post.content}             
         </p>
@@ -119,17 +107,18 @@ function postTemplate(_post) {
         <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
         <button
             type="button"
-            class="likeBtn"
+            class="voteBtn"
             id=${_post.id}>
-        ${_post.nbLikes} Likes
+        !${_post.nbVotes} Votes
         </button>
       </div>`
-      if (_post.price > 0) {
+      if (_post.isActive) {
           rep += `
-          <a class="btn btn-lg btn-outline-dark buyBtn fs-6 p-3" id=${
+          <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" id=${
               _post.id
           }>
-            Buy for ${_post.price} cUSD
+            Contribute to get ${_post.cUsdReward} cUSD
+                and  {_post.questTokenReward} CQT
           </a>`
       }
       rep += `
@@ -230,6 +219,3 @@ document.querySelector("#celoquest").addEventListener("click", (e) => {
         renderPosts()
     }
 })
-
-getUser
-getPosts

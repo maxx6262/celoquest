@@ -69,7 +69,7 @@ contract Celoquest {
         IERC20Token(cUsdTokenAddress).transfer(_to, _amount);
     }
 
-    function setNewInitialQuestTokenBalance(uint _newAmount) external onlyOwner {
+    function _setNewInitialQuestTokenBalance(uint _newAmount) external onlyOwner {
         require(_newAmount >= 0, "new initial amount has to be > 0");
         initialUserTokenBalance = _newAmount;
     }
@@ -160,14 +160,16 @@ contract Celoquest {
         string memory,          //pseudo
         uint,                   //nbQuests
         uint,                   //nbContribs
-        uint                    //questTokenBalance
+        uint,                   //questTokenBalance
+        uint                    //cUsdBalance
     ) {
         require(bytes(userPseudo[_userAddress]).length > 0, "User not founc");
         return (
         userPseudo[_userAddress],
         userQuestsCount[_userAddress],
         userContributionsCount[_userAddress],
-        tokenBalance[_userAddress]
+        tokenBalance[_userAddress],
+        IERC20Token(cUsdTokenAddress).balanceOf(_userAddress)
         );
     }
 
