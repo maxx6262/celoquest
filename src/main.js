@@ -13,7 +13,7 @@ let user
 let quests = []
 let contributions = []
 
-const connectCeloWallet = async function () {
+const connectCeloWallet = async function () {b
     if (window.celo) {
         notification("⚠️ Please approve this DApp to use it.")
         try {
@@ -26,7 +26,7 @@ const connectCeloWallet = async function () {
             const accounts = await kit.web3.eth.getAccounts()
             kit.defaultAccount = accounts[0]
 
-            contract = new web3.eth.Contract(CelobookAbi, CelobookContractAddress)
+            contract = new web3.eth.Contract(CeloquestAbi, CeloQuestContractAddress)
 
         } catch (error) {
             notification(`⚠️ ${error}.`)
