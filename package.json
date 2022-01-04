@@ -3,8 +3,14 @@
   "version": "1.0.0",
   "description": "<h1> CeloQuest </h1>\r <h4> A blockchain social media </h4>\r <p>\r Get rewarded answering/contribution by community members.\r Be rewarded by posting best contribution on the quest event.\r </p>\r # Install",
   "main": "index.js",
+  "dependencies": {
+    "@celo/contractkit": "^1.0.2",
+    "bignumber.js": "^9.0.1"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node index.js",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
@@ -17,4 +23,12 @@
     "url": "https://github.com/maxx6262/CeloQuest/issues"
   },
   "homepage": "https://github.com/maxx6262/CeloQuest#readme"
+},
+  "devDependencies": {
+    "friendly-errors-webpack-plugin": "1.7.0",
+    "html-webpack-plugin": "3.2.0",
+    "webpack": "4.29.6",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^4.7.2"
+  }
 }
