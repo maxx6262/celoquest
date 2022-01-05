@@ -1,19 +1,19 @@
 import Web3 from 'web3'
-import newKitFromWeb3 from '@celo/contractkit'
+import { newKitFromWeb3 } from '@celo/contractkit'
 import BigNumber from 'bignumber.js'
 import CeloquestAbi from '../contract/Celoquest.abi.json'
 
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const CeloQuestContractAddress = "0xe2387112092BBb4AcBBC648736d7E7f3BaD55c2b"
+const celoquestContractAddress = "0xe2387112092BBb4AcBBC648736d7E7f3BaD55c2b"
 let kit
 let contract
 let user
 let quests = []
 let contributions = []
 
-const connectCeloWallet = async function () {b
+const connectCeloWallet = async function () {
     if (window.celo) {
         notification("⚠️ Please approve this DApp to use it.")
         try {
@@ -26,7 +26,7 @@ const connectCeloWallet = async function () {b
             const accounts = await kit.web3.eth.getAccounts()
             kit.defaultAccount = accounts[0]
 
-            contract = new web3.eth.Contract(CeloquestAbi, CeloQuestContractAddress)
+            contract = new web3.eth.Contract(CeloquestAbi, celoquestContractAddress)
 
         } catch (error) {
             notification(`⚠️ ${error}.`)
@@ -59,27 +59,31 @@ const getQuests  = async function() {
 }
 
 const getUser = async function() {
-    let _user = new Promise(async (resolve, reject) => {
-        let p = await contract.methods.readUser(kit.defaultAccount).call()
-        resolve({
-            address:         kit.defaultAccount,
-            pseudo:          p[0],
-            nbQuests:        p[1],
-            nbContributions: p[2],
-            CQTBalance:      p[4],
-        })
-    })
-    user = await Promise.all(_user)
+    const _user = await contract.methods.readUser(kit.defaultAccount).call()
+    const user  =   _user[0]
+    document.querySelector("#UserBlock").innerHTML = userTemplate(kit.defaultAccount, user)
 }
 
-
+const userTemplate = function(_address, _pseudo) {
+    if (String(_pseudo).trim() == '') {
+        return `<a href="https://alfajores-blockscout.celo-testnet.org/address/${String(_address).trim()}">
+                   Undefined pseudo <br>
+                    ${_address}
+                </a>`
+    }
+    else {
+        return  `<a href="https://alfajores-blockscout.celo-testnet.org/address/${String(_address).trim()}>
+                    ${String(_pseudo).trim()}
+                 </a>`
+    }
+}
 
 const getBalance = async function() {
     const totalBalance = await kit.getTotalBalance(kit.defaultAccount)
     const cUSDBalance  = totalBalance.cUSD.shiftedBy(-ERC20_DECIMALS).toFixed(2)
     const CQTBalance   = await contract.methods.questTokenBalanceOf(kit.defaultAccount).call()
-    document.querySelector("#cUsdbalance").textContent = cUSDBalance
-    document.querySelector("#CQTBalance").textContent   = CQTBalance
+    document.querySelector("#cUsdBalance").textContent  = cUSDBalance
+    document.querySelector("#CqtBalance").textContent   = CQTBalance
 }
 
 function renderQuests() {
@@ -161,6 +165,7 @@ window.addEventListener('load', async () => {
     notification("⌛ Loading...")
     await connectCeloWallet()
     await getBalance()
+    await getUser()
     notificationOff()
 });
 
