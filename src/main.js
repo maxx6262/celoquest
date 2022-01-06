@@ -6,7 +6,7 @@ import CeloquestAbi from '../contract/Celoquest.abi.json'
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0xe2387112092BBb4AcBBC648736d7E7f3BaD55c2b"
+const celoquestContractAddress = "0x351b7F18740b1f39e61769709d76D4F121dD7dae"
 let kit
 let contract
 let user
@@ -109,26 +109,20 @@ function questTemplate(_quest) {
         <div class="translate-middle-y position-absolute top-0">
         ${identiconTemplate(_quest.owner)}
         </div>
-        <h2 class="card-title fs-4 fw-bold mt-2">${_post.id}</h2>
+        <h2 class="card-title fs-4 fw-bold mt-2">${_quest.id}</h2>
         <p class="card-text mb-4" style="min-height: 82px">
-          ${_post.content}             
+          ${_quest.content}             
         </p>
         <div class="d-grid gap-2">
         <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
-        <button
-            type="button"
-            class="voteBtn"
-            id=${_post.id}>
-        !${_post.nbVotes} Votes
-        </button>
       </div>`
-      if (_post.isActive) {
+      if (_quest.isActive) {
           rep += `
           <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" id=${
-              _post.id
+              _quest.id
           }>
-            Contribute to get ${_post.cUsdReward} cUSD
-                and  {_post.questTokenReward} CQT
+            Contribute to get ${_quest.cUsdReward} cUSD
+                and  {_quest.questTokenReward} CQT
           </a>`
       }
       rep += `
@@ -176,27 +170,42 @@ window.addEventListener('load', async () => {
 });
 
 document
-    .querySelector("#newPostBtn")
+    .querySelector("newQuestBtn")
     .addEventListener("click", () => {
-        const _newPost = {
-            id:             posts.length,
+        const _newQuest = {
+            id:             quests.length,
             owner:          "0x2EF48F32eB0AEB90778A2170a0558A941b72BFFb",
-            title:          document.getElementById("newPostTitle").value,
-            author:         document.getElementById('newPostAuthor').value,
-            content:        document.getElementById("newPostContent").value,
-            price:          document.getElementById("newPrice").value,
-            nbLikes:        0,
+            title:          document.getElementById("newQuestTitle").value,
+            author:         document.getElementById('newQuestAuthor').value,
+            content:        document.getElementById("newQuestContent").value,
+            cUsdReward:     document.getElementById("newcUSDReward").value,
+            cqtReward:      document.getElementById("newCQTReward").value,
         }
         try {
             const result = contract.methods
-                .newPost(_newPost.title, _newPost.content)
+                .newQuest(_newQuest.content, _newQuest.cUsdReward, _newQuest.cqtReward, 1)
                 .send({ from: kit.defaultAccount})
         } catch (error) {
             notification(`⚠️ ${error}.`)
         }
-        posts.push(_newPost)
-        notification(`🎉 You successfully added "${_newPost.title}".`)
-        renderPosts()
+        quests.push(_newQuest)
+        notification(`🎉 You successfully added "${_newQuest.title}".`)
+        renderQuests()
+    })
+
+document
+    .querySelector("newPseudoBtn").addEventListener("click", () => {
+            const _newPseudo = document.getElementById("newPseudo").value
+            try {
+                const result = contract.methods
+                    .setPseudo(_newPseudo)
+                    .send({from: kit.defaultAccount})
+            } catch (error) {
+                notification(`⚠️ ${error}.`)
+            }
+            user = _newPseudo;
+            notification(`🎉You succesfully set pseudo "${user.pseudo}" for address ${kit.defaultAccount}.`)
+            getUser()
     })
 
 document.querySelector("#celoquest").addEventListener("click", (e) => {
