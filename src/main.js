@@ -78,7 +78,7 @@ const userTemplate = function(_address, _pseudo) {
             ${identiconTemplate(_address)}
             <a  class="btn rounded-pill"
                 data-bs-toggle="modal"
-                href="#addUserModal">
+                href="#pseudoModal">
                 ${_pseudo}
             </a>
             </span>`
