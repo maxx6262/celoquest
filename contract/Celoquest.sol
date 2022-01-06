@@ -222,6 +222,7 @@ contract Celoquest {
     */
     struct Quest {
         address                             owner;
+        string                              title;
         string                              content;
         uint                                deadLine;
         uint                                cUsdReward;
@@ -236,7 +237,7 @@ contract Celoquest {
     mapping(uint => Quest) quests;
     mapping(uint => bool)  questRewardPaid;
 
-    event NewQuest(address owner, string content, uint cUsdReward, uint questTokenReward, uint deadline);
+    event NewQuest(address owner, string title, uint cUsdReward, uint questTokenReward, uint deadline);
     event NewVote(uint questId, uint contributionId, address userAddress);
     event NewRewardPayment(address payable winnerAddress, uint questId, uint questTokenAmount, uint cUsdAmount);
 
@@ -252,7 +253,7 @@ contract Celoquest {
         *           - Users can contribute until deadline
         *           - Users can vote until deadline + 1 day
     */
-    function createQuest(string memory _content, uint _cUsdReward, uint _questTokenReward, uint _nbActiveDays)
+    function createQuest(string memory _title, string memory _content, uint _cUsdReward, uint _questTokenReward, uint _nbActiveDays)
     external {
         require(bytes(_content).length > 0, "Quest content can't be empty");
         require(_cUsdReward + _questTokenReward > 0, "Quest must have reward amount");
@@ -260,6 +261,7 @@ contract Celoquest {
         require(IERC20Token(cUsdTokenAddress).transferFrom(msg.sender, payable(address(this)), _cUsdReward), "Error during cUsd transaction");
         _transferQuestTokenFrom(msg.sender, address(this), _questTokenReward);
         Quest storage _newQuest     =   quests[nbQuests];
+        _newQuest.title             =   _title;
         _newQuest.owner             =   msg.sender;
         _newQuest.content           =   _content;
         _newQuest.cUsdReward        =   _cUsdReward;
@@ -271,23 +273,42 @@ contract Celoquest {
         emit NewQuest(msg.sender, _content, _cUsdReward, _questTokenReward, _newQuest.deadLine);
         nbQuests++;
     }
+
+
     //Get all Quest data
-    function getQuest(uint _questId) public view returns (
+    function getActiveQuest(uint _questId) public view isActive(_questId) returns (
         address,            //Quest's owner
+        string memory,      //Quest's title
         string memory,      //Quest content
         uint,               //cUsd Reward amount
         uint,               //questToken Reward amount
-        uint,               //Quest Contributions Count
-        bool                //Quest isActive ?
+        uint                //Quest Contributions Count
     ) {
-        require(_questId <= nbQuests, "Quest not found");
         return (
         quests[_questId].owner,
+        quests[_questId].title,
         quests[_questId].content,
         quests[_questId].cUsdReward,
         quests[_questId].tokenReward,
+        quests[_questId].nbContributions
+        );
+    }
+
+    //get any Quest
+    function getQuest(uint _questId) public view returns(
+        address,        //owner
+        string memory,  //title
+        string memory,  //content
+        uint,           //nbContribs
+        bool           //isActive
+    )  {
+        require(_questId < nbQuests, "Quest not found");
+        return(
+        quests[_questId].owner,
+        quests[_questId].title,
+        quests[_questId].content,
         quests[_questId].nbContributions,
-        quests[_questId].deadLine < block.timestamp
+        quests[_questId].deadLine > block.timestamp
         );
     }
 

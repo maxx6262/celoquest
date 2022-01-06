@@ -6,7 +6,7 @@ import CeloquestAbi from '../contract/Celoquest.abi.json'
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0x351b7F18740b1f39e61769709d76D4F121dD7dae"
+const celoquestContractAddress = "0xC9031FC094e12e4aee68BF223D624a9152D59Be5"
 let kit
 let contract
 let user
@@ -166,38 +166,41 @@ window.addEventListener('load', async () => {
     await connectCeloWallet()
     await getBalance()
     await getUser()
+    await getQuests()
     notificationOff()
 });
 
-document
-    .querySelector("newQuestBtn")
-    .addEventListener("click", () => {
+document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
+        console.log("gege")
         const _newQuest = {
             id:             quests.length,
-            owner:          "0x2EF48F32eB0AEB90778A2170a0558A941b72BFFb",
+            owner:          kit.defaultAccount,
             title:          document.getElementById("newQuestTitle").value,
-            author:         document.getElementById('newQuestAuthor').value,
             content:        document.getElementById("newQuestContent").value,
             cUsdReward:     document.getElementById("newcUSDReward").value,
             cqtReward:      document.getElementById("newCQTReward").value,
+            nbActiveDays:   1,
         }
         try {
-            const result = contract.methods
-                .newQuest(_newQuest.content, _newQuest.cUsdReward, _newQuest.cqtReward, 1)
+            console.log(_newQuest)
+            const result = await contract.methods
+                .createQuest(_newQuest.content, _newQuest.cUsdReward, _newQuest.cqtReward, _newQuest.nbActiveDays)
                 .send({ from: kit.defaultAccount})
         } catch (error) {
             notification(`⚠️ ${error}.`)
         }
         quests.push(_newQuest)
+        console.log(quests)
         notification(`🎉 You successfully added "${_newQuest.title}".`)
+        getBalance()
         renderQuests()
-    })
+})
 
 document
-    .querySelector("newPseudoBtn").addEventListener("click", () => {
+    .querySelector("#newPseudoBtn").addEventListener("click", async (e) => {
             const _newPseudo = document.getElementById("newPseudo").value
             try {
-                const result = contract.methods
+                const result = await contract.methods
                     .setPseudo(_newPseudo)
                     .send({from: kit.defaultAccount})
             } catch (error) {
@@ -208,6 +211,7 @@ document
             getUser()
     })
 
+/**
 document.querySelector("#celoquest").addEventListener("click", (e) => {
     if(e.target.className.includes("likeBtn")) {
         const index = e.target.id
@@ -238,4 +242,4 @@ document.querySelector("#celoquest").addEventListener("click", (e) => {
         getPosts()
         renderPosts()
     }
-})
+})*/
