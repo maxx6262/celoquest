@@ -36,20 +36,20 @@ const connectCeloWallet = async function () {
     }
 }
 
-const getQuests  = async function() {
+const getActiveQuests  = async function() {
     const _questsLength = await contract.methods.getNbQuests().call()
     const _quests = []
     for (let i = 1 ; i < _questsLength ; i++) {
         let _quest = new Promise(async (resolve, reject) => {
-            let p = await contract.methods.getQuest(i).call()
+            let p = await contract.methods.getActiveQuest(i).call()
             resolve( {
                 id:                     i,
                 owner:                  p[0],
-                content:                p[1],
-                cUsdReward:             p[2],
-                questTokenReward:       p[3],
-                nbContributions:        p[4],
-                isActive:               p[5],
+                title:                  p[1],
+                content:                p[2],
+                cUsdReward:             p[3],
+                questTokenReward:       p[4],
+                nbContributions:        p[5],
             })
         })
         _quests.push(_quest)
@@ -92,7 +92,7 @@ const getBalance = async function() {
     document.querySelector("#CqtBalance").textContent   = CQTBalance
 }
 
-function renderQuests() {
+function renderQuestsList() {
     document.getElementById("celoquest").innerHTML = ""
     quests.forEach((_quest) => {
         const newDiv = document.createElement("div")
@@ -103,34 +103,26 @@ function renderQuests() {
 }
 
 function questTemplate(_quest) {
-    let rep = `
+    return `
     <div class="card mb-4">
       <div class="card-body text-left p-4 position-relative">
         <div class="translate-middle-y position-absolute top-0">
         ${identiconTemplate(_quest.owner)}
         </div>
-        <h2 class="card-title fs-4 fw-bold mt-2">${_quest.id}</h2>
+        <h2 class="card-title fs-4 fw-bold mt-2">${_quest.title}</h2>
         <p class="card-text mb-4" style="min-height: 82px">
           ${_quest.content}             
         </p>
-        <div class="d-grid gap-2">
+       <div class="d-grid gap-2">
         <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
-      </div>`
-      if (_quest.isActive) {
-          rep += `
-          <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" id=${
-              _quest.id
-          }>
-            Contribute to get ${_quest.cUsdReward} cUSD
-                and  {_quest.questTokenReward} CQT
-          </a>`
-      }
-      rep += `
         </div>
+        <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" id="${_quest.id}">
+            Contribute to get ${_quest.cUsdReward} cUSD
+                and  ${_quest.questTokenReward} CQT
+        </a>
+       </div>
       </div>
-    </div>
-    `
-    return rep
+    </div>`
 }
 
 function identiconTemplate(_address) {
