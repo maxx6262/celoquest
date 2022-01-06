@@ -82,7 +82,7 @@
           data-bs-toggle="modal"
           data-bs-target="#addModal"
         >
-          Write a post
+          Create a new Quest
         </a>
         </p>
       </div>
@@ -95,13 +95,13 @@
       class="modal fade"
       id="addModal"
       tabindex="-1"
-      aria-labelledby="newPostModalLabel"
+      aria-labelledby="newQuestModalLabel"
       aria-hidden="true"
     >
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="newPostModalLabel">New Post</h5>
+            <h5 class="modal-title" id="newQuestModalLabel">New Quest</h5>
             <button
               type="button"
               class="btn-close"
@@ -115,41 +115,99 @@
                 <div class="col">
                   <input
                     type="text"
-                    id="newPostTitle"
+                    id="newQuestTitle"
                     class="form-control mb-2"
-                    placeholder="Enter post Title"
+                    placeholder="Enter Quest Title"
                   />
                 </div>
                 <div class="col">
                   <input
                     type="text"
-                    id="newPostAuthor"
+                    id="newQuestOwner"
                     class="form-control mb-2"
-                    placeholder="Enter Post author pseudo"
+                    placeholder="Enter Quest author pseudo"
                   />
                 </div>
                 <div class="col">
                   <input
                     type="text"
-                    id="newPostContent"
+                    id="newQuestContent"
                     class="form-control mb-2"
-                    placeholder="Enter Post content"
+                    placeholder="Enter Quest content"
                   />
                 </div>
                 <div class="col">
                   <input
                     type="int"
-                    id="newPrice"
+                    id="newcUSDReward"
                     class="form-control mb-2"
-                    placeholder="Enter Post Price"
+                    placeholder="Enter cUsd Quest Reward"
                   />
                 </div>
                 <div class="col">
                   <input
-                    type="text"
-                    id="newPrice"
+                    type="int"
+                    id="newCQTReward"
                     class="form-control mb-2"
-                    placeholder="Enter price"
+                    placeholder="Enter CQT Quest Reward"
+                  />
+                </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-light border"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              class="btn btn-dark"
+              data-bs-dismiss="modal"
+              id="newQuestBtn"
+            >
+              Add Quest
+            </button>
+            <p>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+<!--/Modal-->
+<!------------------------------------------------------------------------------->
+<!--userModal-->
+    <div
+      class="modal fade"
+      id="pseudoModal"
+      tabindex="-1"
+      aria-labelledby="newPseudoModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="newPseudoModalLabel">New Pseudo</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-row">
+                <div class="col">
+                  <input
+                    type="text"
+                    id="newPseudo"
+                    class="form-control mb-2"
+                    placeholder="Enter your new pseudo
                   />
                 </div>
               </div>
@@ -167,9 +225,9 @@
               type="button"
               class="btn btn-dark"
               data-bs-dismiss="modal"
-              id="newPostBtn"
+              id="newPseudoBtn"
             >
-              Add Post
+              Store Pseudo
             </button>
             <p>
             </p>
@@ -177,8 +235,7 @@
         </div>
       </div>
     </div>
-<!--/Modal-->
-
+<!--/userModal-->
     <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"

@@ -59,23 +59,29 @@ const getQuests  = async function() {
 }
 
 const getUser = async function() {
-    const _user = await contract.methods.readUser(kit.defaultAccount).call()
-    const user  =   _user[0]
-    document.querySelector("#UserBlock").innerHTML = userTemplate(kit.defaultAccount, user)
+    let pseudo
+    try {
+        const _user = await contract.methods.readUser(kit.defaultAccount).call()
+        pseudo = _user[0]
+    } catch (error) {
+        notification(error)
+        pseudo = ""
+    }
+    document.querySelector("#UserBlock").innerHTML = userTemplate(kit.defaultAccount, pseudo)
 }
 
 const userTemplate = function(_address, _pseudo) {
-    if (String(_pseudo).trim() == '') {
-        return `<a href="https://alfajores-blockscout.celo-testnet.org/address/${String(_address).trim()}">
-                   Undefined pseudo <br>
-                    ${_address}
-                </a>`
+    if (_pseudo.trim() === "") {
+        _pseudo =   "Unknown address"
     }
-    else {
-        return  `<a href="https://alfajores-blockscout.celo-testnet.org/address/${String(_address).trim()}>
-                    ${String(_pseudo).trim()}
-                 </a>`
-    }
+    return `<span id="user">
+            ${identiconTemplate(_address)}
+            <a  class="btn rounded-pill"
+                data-bs-toggle="modal"
+                href="#addUserModal">
+                ${_pseudo}
+            </a>
+            </span>`
 }
 
 const getBalance = async function() {
