@@ -55,8 +55,8 @@ const getUser = async function() {
 }
 
         //Get Pseudo from address
-async function getPseudo(_address) {
-    let pseudo = await contract.methods.getPseudo(_address).call()
+function getPseudo(_address) {
+    let pseudo = contract.methods.getPseudo(_address).call()
     if (pseudo.trim === "") {
         pseudo = "Unknown user"
     }
@@ -65,7 +65,6 @@ async function getPseudo(_address) {
 
         //Display address badge
 function identiconTemplate(_address) {
-    const pseudo = getPseudo(_address)
     const icon = blockies
         .create({
             seed: _address,
@@ -73,14 +72,12 @@ function identiconTemplate(_address) {
             scale: 16,
         })
         .toDataURL()
-
     return `
   <div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0">
     <a href="https://alfajores-blockscout.celo-testnet.org/address/${_address}/transactions"
         target="_blank">
         <img src="${icon}" width="48" alt="${_address}">
     </a>
-    ${pseudo}
   </div>
   `
 }
