@@ -156,6 +156,9 @@ contract Celoquest {
         userPseudo[msg.sender] = _newPseudo;
     }
 
+    /** * @param _userAddress : address to find from active users
+        * @dev Return user's stored data from _address
+    */
     function readUser(address _userAddress) public view returns(
         string memory,          //pseudo
         uint,                   //nbQuests
@@ -171,6 +174,13 @@ contract Celoquest {
         tokenBalance[_userAddress],
         IERC20Token(cUsdTokenAddress).balanceOf(_userAddress)
         );
+    }
+
+    /** * @param _userAddress : Address to read
+        * @dev get User pseudo
+    */
+    function getPseudo(address _userAddress) public view returns(string memory) {
+        return userPseudo[_userAddress];
     }
 
     //****************************************************************************************************/
@@ -310,6 +320,10 @@ contract Celoquest {
         quests[_questId].nbContributions,
         quests[_questId].deadLine > block.timestamp
         );
+    }
+
+    function isActiveQuest(uint _questId) public view returns(bool) {
+        return (quests[_questId].deadLine + (1 days) > block.timestamp);
     }
 
     modifier isActive(uint _questId) {

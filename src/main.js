@@ -6,13 +6,16 @@ import CeloquestAbi from '../contract/Celoquest.abi.json'
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0xC9031FC094e12e4aee68BF223D624a9152D59Be5"
+const celoquestContractAddress = "0x372e46f34900AF60814a754350052460C9C11f2d"
 let kit
 let contract
 let user
 let quests = []
 let contributions = []
 
+//***********************************************************************************************
+
+    //Connec Web3 wallet to the chain
 const connectCeloWallet = async function () {
     if (window.celo) {
         notification("⚠️ Please approve this DApp to use it.")
@@ -36,27 +39,7 @@ const connectCeloWallet = async function () {
     }
 }
 
-const getActiveQuests  = async function() {
-    const _questsLength = await contract.methods.getNbQuests().call()
-    const _quests = []
-    for (let i = 1 ; i < _questsLength ; i++) {
-        let _quest = new Promise(async (resolve, reject) => {
-            let p = await contract.methods.getActiveQuest(i).call()
-            resolve( {
-                id:                     i,
-                owner:                  p[0],
-                title:                  p[1],
-                content:                p[2],
-                cUsdReward:             p[3],
-                questTokenReward:       p[4],
-                nbContributions:        p[5],
-            })
-        })
-        _quests.push(_quest)
-    }
-    quests = await Promise.all(_quests)
-    renderQuests()
-}
+
 
 const getUser = async function() {
     let pseudo
@@ -70,6 +53,31 @@ const getUser = async function() {
     document.querySelector("#UserBlock").innerHTML = userTemplate(kit.defaultAccount, pseudo)
 }
 
+        //Get Pseudo from address
+async function getPseudo(_address) {
+    const pseudo = await contract.methods.getPseu
+}
+
+        //Display address badge
+function identiconTemplate(_address) {
+    const icon = blockies
+        .create({
+            seed: _address,
+            size: 8,
+            scale: 16,
+        })
+        .toDataURL()
+
+    return `
+  <div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0">
+    <a href="https://alfajores-blockscout.celo-testnet.org/address/${_address}/transactions"
+        target="_blank">
+        <img src="${icon}" width="48" alt="${_address}">
+    </a>
+  </div>
+  `
+}
+        //User block template
 const userTemplate = function(_address, _pseudo) {
     if (_pseudo.trim() === "") {
         _pseudo =   "Unknown address"
@@ -92,6 +100,32 @@ const getBalance = async function() {
     document.querySelector("#CqtBalance").textContent   = CQTBalance
 }
 
+
+//*******************************************************************************************
+    //Quests management
+const getActiveQuests  = async function() {
+    const _questsLength = await contract.methods.getNbQuests().call()
+    const _quests = []
+    for (let i = 0 ; i < _questsLength ; i++) {
+        let _quest = new Promise(async (resolve, reject) => {
+            let isActive = await contract.methods.isActive(_i).call()
+            let p = await contract.methods.getActiveQuest(i).call()
+            resolve( {
+                id:                     i,
+                owner:                  p[0],
+                title:                  p[1],
+                content:                p[2],
+                cUsdReward:             p[3],
+                questTokenReward:       p[4],
+                nbContributions:        p[5],
+            })
+        })
+        _quests.push(_quest)
+    }
+    quests = await Promise.all(_quests)
+    renderQuests()
+}
+
 function renderQuestsList() {
     document.getElementById("celoquest").innerHTML = ""
     quests.forEach((_quest) => {
@@ -101,7 +135,7 @@ function renderQuestsList() {
         document.getElementById('celoquest').appendChild(newDiv)
     })
 }
-
+        //Template to display Quest on Dasboard list
 function questTemplate(_quest) {
     return `
     <div class="card mb-4">
@@ -125,25 +159,36 @@ function questTemplate(_quest) {
     </div>`
 }
 
-function identiconTemplate(_address) {
-    const icon = blockies
-        .create({
-            seed: _address,
-            size: 8,
-            scale: 16,
-        })
-        .toDataURL()
 
-     return `
-  <div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0">
-    <a href="https://alfajores-blockscout.celo-testnet.org/address/${_address}/transactions"
-        target="_blank">
-        <img src="${icon}" width="48" alt="${_address}">
-    </a>
-  </div>
-  `
+//***********************************************************************************************
+        //Contributions management
+
+async function getContrib(_contribId) {
+    const result = await contract.methods.readContribution(_contribId).call()
+    const contrib = {
+        id:             _contribId,
+        owner:          result[1],
+        content:        result[2],
+        nbVotes:        result[3]
+    }
+    return `<div id="contrib${_contribId}">
+                <span class="owner"> ${contrib.owner}</span>
+                <span class="contrib-content"> ${contrib.content}</span>
+                <span class="nbVotes"> ${contrib.nbVotes}</span>
+            </div>`
 }
 
+async function getContribs(questId) {
+    let rep = `<div class="quest" id="quest${questId}>`
+    const nbContribs = await contract.methods.getCont
+}
+
+
+
+
+//***********************************************************************************************
+
+        //Notifications management
 function notification(_text) {
     document.querySelector(".alert").style.display = "block"
     document.querySelector("#notification").textContent = _text
@@ -153,6 +198,9 @@ function notificationOff() {
     document.querySelector(".alert").style.display = "None"
 }
 
+//********************************************************************************************
+
+        //Event listeners
 window.addEventListener('load', async () => {
     notification("⌛ Loading...")
     await connectCeloWallet()
@@ -161,7 +209,7 @@ window.addEventListener('load', async () => {
     await getQuests()
     notificationOff()
 });
-
+        //New Quest Creation
 document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
         console.log("gege")
         const _newQuest = {
@@ -176,7 +224,7 @@ document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
         try {
             console.log(_newQuest)
             const result = await contract.methods
-                .createQuest(_newQuest.content, _newQuest.cUsdReward, _newQuest.cqtReward, _newQuest.nbActiveDays)
+                .createQuest(_newQuest.title, _newQuest.content, _newQuest.cUsdReward, _newQuest.cqtReward, _newQuest.nbActiveDays)
                 .send({ from: kit.defaultAccount})
         } catch (error) {
             notification(`⚠️ ${error}.`)
@@ -188,6 +236,7 @@ document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
         renderQuests()
 })
 
+        //Set Pseudo
 document
     .querySelector("#newPseudoBtn").addEventListener("click", async (e) => {
             const _newPseudo = document.getElementById("newPseudo").value
@@ -201,6 +250,7 @@ document
             user = _newPseudo;
             notification(`🎉You succesfully set pseudo "${user.pseudo}" for address ${kit.defaultAccount}.`)
             getUser()
+            getActiveQuests()
     })
 
 /**
