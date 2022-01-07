@@ -55,11 +55,16 @@ const getUser = async function() {
 
         //Get Pseudo from address
 async function getPseudo(_address) {
-    const pseudo = await contract.methods.getPseu
+    let pseudo = await contract.methods.getPseudo(_address).call()
+    if (pseudo.trim === "") {
+        pseudo = "Unknown user"
+    }
+    return pseudo
 }
 
         //Display address badge
 function identiconTemplate(_address) {
+    const pseudo = getPseudo(_address)
     const icon = blockies
         .create({
             seed: _address,
@@ -74,6 +79,7 @@ function identiconTemplate(_address) {
         target="_blank">
         <img src="${icon}" width="48" alt="${_address}">
     </a>
+    ${pseudo}
   </div>
   `
 }
