@@ -6,7 +6,7 @@ import CeloquestAbi from '../contract/Celoquest.abi.json'
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0x372e46f34900AF60814a754350052460C9C11f2d"
+const celoquestContractAddress = "0x6b3c64Fcb6140C3b16CcBaAdC025d0ccb65594B0"
 let kit
 let contract
 let user
@@ -38,8 +38,9 @@ const connectCeloWallet = async function () {
         notification("⚠️ Please install the CeloExtensionWallet.")
     }
 }
+//*****************************************************************************************************
 
-
+    //User management
 
 const getUser = async function() {
     let pseudo
@@ -97,7 +98,7 @@ const userTemplate = function(_address, _pseudo) {
             </a>
             </span>`
 }
-
+        //Balance of user Wallet
 const getBalance = async function() {
     const totalBalance = await kit.getTotalBalance(kit.defaultAccount)
     const cUSDBalance  = totalBalance.cUSD.shiftedBy(-ERC20_DECIMALS).toFixed(2)
@@ -165,7 +166,6 @@ function questTemplate(_quest) {
     </div>`
 }
 
-
 //***********************************************************************************************
         //Contributions management
 
@@ -184,9 +184,15 @@ async function getContrib(_contribId) {
             </div>`
 }
 
-async function getContribs(questId) {
-    let rep = `<div class="quest" id="quest${questId}>`
-    const nbContribs = await contract.methods.getCont
+async function getContribs(_questId) {
+    let rep = `<div class="quest" id="quest${questId}>
+                `
+    const nbContribs = await contract.methods.getQuestNbContribs(_questId)
+    for (let i = 0 ; i < nbContribs ; i++) {
+        let _idContrib = await contract.methods.getContribId(_questId, i).call()
+        rep += getContrib(_idContrib)
+    }
+    rep += `</div>`
 }
 
 

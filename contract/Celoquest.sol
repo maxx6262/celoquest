@@ -255,6 +255,25 @@ contract Celoquest {
         return nbQuests;
     }
 
+
+    /** * @param _questId : id of quest
+        * @dev return nb of contributions for this Quest
+    */
+    function getQuestNbContribs(uint _questId) public view returns(uint) {
+        require(_questId < nbQuests, "Quest not found");
+        return quests[_questId].nbContributions;
+    }
+
+    /** * @param _questId:  id of Quest
+        * @param _contribInternalId Quest internal contribID
+        * @dev return public contribId from Quest internal id of contribID
+    */
+    function getContribId(uint _questId, uint _contribInternalId) public view returns(uint) {
+        require(_questId < nbQuests, "Quest not found");
+        require(_contribInternalId < quests[_questId].nbContributions, "Contribution not found");
+        return quests[_questId].contributions[_contribInternalId];
+    }
+
     /** * @param _content is Quest explanation/description
         * @param _cUsdReward  is cUsd reward amount Quest's owner will pay to winner
         * @param _questTokenReward is QuestToken reward amount Quest's owner will pay to winner
