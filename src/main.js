@@ -112,25 +112,27 @@ const getBalance = async function() {
     //Quests management
 const getActiveQuests  = async function() {
     const _questsLength = await contract.methods.getNbQuests().call()
-    const _quests = []
+    let _quests = []
     for (let i = 0 ; i < _questsLength ; i++) {
         let _quest = new Promise(async (resolve, reject) => {
             let isActive = await contract.methods.isActive(_i).call()
-            let p = await contract.methods.getActiveQuest(i).call()
-            resolve( {
-                id:                     i,
-                owner:                  p[0],
-                title:                  p[1],
-                content:                p[2],
-                cUsdReward:             p[3],
-                questTokenReward:       p[4],
-                nbContributions:        p[5],
-            })
+            if (isActive) {
+                let p = await contract.methods.getActiveQuest(i).call()
+                resolve({
+                    id: i,
+                    owner: p[0],
+                    title: p[1],
+                    content: p[2],
+                    cUsdReward: p[3],
+                    questTokenReward: p[4],
+                    nbContributions: p[5],
+                })
+            }
         })
         _quests.push(_quest)
     }
     quests = await Promise.all(_quests)
-    renderQuests()
+    renderQuestsList()
 }
 
 function renderQuestsList() {
@@ -166,34 +168,31 @@ function questTemplate(_quest) {
     </div>`
 }
 
+async function addQuest(_title, _content, _cUsdReward, _cqtReward, _nbActiveDays) {
+    try {
+        const _newQuest = {
+            id:             quests.length,
+            owner:          kit.defaultAccount,
+            title:          _title,
+            content:        _content,
+            cUsdReward:     _cUsdReward,
+            cqtReward:      _cqtReward,
+            nbActiveDays:   _nbActiveDays
+        }
+        const result = await contract.methods
+            .createQuest(_title, _content, _cUsdReward, _cqtReward, _nbActiveDays)
+            .send({from: kit.defaultAccount})
+        notification(`🎉 You successfully added "${_newQuest.title}".`)
+        quests.push(_newQuest)
+        getBalance()
+        renderQuestsList()
+    } catch (error) {
+        notification(`⚠️ ${error}.`)
+    }
+}
+
 //***********************************************************************************************
         //Contributions management
-
-async function getContrib(_contribId) {
-    const result = await contract.methods.readContribution(_contribId).call()
-    const contrib = {
-        id:             _contribId,
-        owner:          result[1],
-        content:        result[2],
-        nbVotes:        result[3]
-    }
-    return `<div id="contrib${_contribId}">
-                <span class="owner"> ${contrib.owner}</span>
-                <span class="contrib-content"> ${contrib.content}</span>
-                <span class="nbVotes"> ${contrib.nbVotes}</span>
-            </div>`
-}
-
-async function getContribs(_questId) {
-    let rep = `<div class="quest" id="quest${questId}>
-                `
-    const nbContribs = await contract.methods.getQuestNbContribs(_questId)
-    for (let i = 0 ; i < nbContribs ; i++) {
-        let _idContrib = await contract.methods.getContribId(_questId, i).call()
-        rep += getContrib(_idContrib)
-    }
-    rep += `</div>`
-}
 
 
 
@@ -218,34 +217,21 @@ window.addEventListener('load', async () => {
     await connectCeloWallet()
     await getBalance()
     await getUser()
-    await getQuests()
+    await getActiveQuests()
     notificationOff()
 });
-        //New Quest Creation
+        //New Quest Creation Event
 document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
-        console.log("gege")
-        const _newQuest = {
-            id:             quests.length,
-            owner:          kit.defaultAccount,
-            title:          document.getElementById("newQuestTitle").value,
-            content:        document.getElementById("newQuestContent").value,
-            cUsdReward:     document.getElementById("newcUSDReward").value,
-            cqtReward:      document.getElementById("newCQTReward").value,
-            nbActiveDays:   1,
-        }
-        try {
-            console.log(_newQuest)
-            const result = await contract.methods
-                .createQuest(_newQuest.title, _newQuest.content, _newQuest.cUsdReward, _newQuest.cqtReward, _newQuest.nbActiveDays)
-                .send({ from: kit.defaultAccount})
+        try  {
+            addQuest(
+                document.getElementById("newQuestTitle").value,
+                document.getElementById("newQuestContent").value,
+                document.getElementById("newcUSDReward").value,
+                document.getElementById("newCQTReward").value,
+                1)
         } catch (error) {
-            notification(`⚠️ ${error}.`)
+            console.log(error)
         }
-        quests.push(_newQuest)
-        console.log(quests)
-        notification(`🎉 You successfully added "${_newQuest.title}".`)
-        getBalance()
-        renderQuests()
 })
 
         //Set Pseudo
@@ -264,36 +250,3 @@ document
             getUser()
             getActiveQuests()
     })
-
-/**
-document.querySelector("#celoquest").addEventListener("click", (e) => {
-    if(e.target.className.includes("likeBtn")) {
-        const index = e.target.id
-        try {
-            const result = contract.methods
-                .likePost(index)
-                .send({ from: kit.defaultAccount})
-        } catch (error) {
-            notification(`⚠️ ${error}.`)
-        }
-        posts[index].nbLikes++
-        notification(`🎉 You successfully liked "${posts[index].title}".`)
-        renderPosts()
-    }
-})
-
-document.querySelector("#celoquest").addEventListener("click", (e) => {
-    if(e.target.className.includes("buyBtn")) {
-        const index = e.target.id
-        try {
-            const result =  contract.methods
-                .buyPost(index)
-                .send({from: kit.defaultAccount})
-        } catch (error) {
-            notification(`⚠️ ${error}.`)
-        }
-        notification(`🎉You succesfully buyed "${posts[index].title}".`)
-        getPosts()
-        renderPosts()
-    }
-})*/

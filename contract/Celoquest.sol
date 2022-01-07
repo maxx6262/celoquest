@@ -260,8 +260,16 @@ contract Celoquest {
         * @dev return nb of contributions for this Quest
     */
     function getQuestNbContribs(uint _questId) public view returns(uint) {
-        require(_questId < nbQuests, "Quest not found");
+        require(_questId <= nbQuests, "Quest not found");
         return quests[_questId].nbContributions;
+    }
+
+    /** * @param _questId: id of quest
+        * @dev return title of Quest
+    */
+    function getQuestTitle(uint _questId) public view returns(string memory) {
+        require(_questId <= nbQuests, "Quest not found");
+        return (quests[_questId].title);
     }
 
     /** * @param _questId:  id of Quest
