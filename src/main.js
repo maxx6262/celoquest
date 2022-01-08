@@ -6,7 +6,7 @@ import CeloquestAbi from '../contract/Celoquest.abi.json'
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0xd9145CCE52D386f254917e481eB44e9943F39138"
+const celoquestContractAddress = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"
 let kit
 let contract
 let user
@@ -338,3 +338,7 @@ document
             getUser()
             getActiveQuests()
     })
+
+connectCeloWallet()
+getUser()
+getActiveQuests()
