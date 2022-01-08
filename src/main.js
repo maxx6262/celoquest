@@ -6,7 +6,7 @@ import CeloquestAbi from '../contract/Celoquest.abi.json'
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"
+const celoquestContractAddress = "0xB41D661F3C3B054852dA71F1a57fF63E9301c0D2"
 let kit
 let contract
 let user
@@ -56,7 +56,7 @@ const getUser = async function() {
 
         //Get Pseudo from address
 async function getPseudo(_address) {
-    let pseudo = contract.methods.getPseudo(_address).call()
+    let pseudo = await contract.methods.getPseudo(_address).call()
     if (pseudo.trim === "") {
         pseudo = "Unknown user"
     }
@@ -113,26 +113,22 @@ const getActiveQuests  = async function() {
     notification("Loading " + _questsLength + " stored quets")
     let _quests = []
     for (let i = 0 ; i < _questsLength ; i++) {
-        let _quest = new Promise(async (resolve, reject) => {
-            let isActive = await contract.methods.isActiveQuest(i).call()
-            if (isActive) {
-                let p = await contract.methods.getActiveQuest(i).call()
-                let _pseudo = await getPseudo(p[0])
-                resolve({
-                    id:                 i,
-                    owner:              p[0],
-                    pseudo:             _pseudo,
-                    title:              p[1],
-                    content:            p[2],
-                    cUsdReward:         p[3],
-                    cqtReward:          p[4],
-                    nbContributions:    p[5],
-                })
-            }
-        })
+        let p = await contract.methods.getActiveQuest(i).call()
+        let _pseudo = await getPseudo(p[0])
+        let _quest = {
+            id:                 i,
+            owner:              p[0],
+            pseudo:             _pseudo,
+            title:              p[1],
+            content:            p[2],
+            cUsdReward:         p[3],
+            cqtReward:          p[4],
+            nbContributions:    p[5],
+        }
         _quests.push(_quest)
-    }
-    quests = await Promise.all(_quests)
+        }
+    quests = _quests
+    renderQuestsList()
     notificationOff()
 }
 
@@ -338,7 +334,3 @@ document
             getUser()
             getActiveQuests()
     })
-
-connectCeloWallet()
-getUser()
-getActiveQuests()

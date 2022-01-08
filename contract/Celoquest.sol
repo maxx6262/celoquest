@@ -354,8 +354,8 @@ contract Celoquest {
     }
 
     modifier isActive(uint _questId) {
-        require(_questId <= nbQuests && _questId >= 0, "Quest not found");
-        require(quests[_questId].deadLine < block.timestamp);
+        require(_questId < nbQuests, "Quest not found");
+        require(quests[_questId].deadLine + (1 days) >= block.timestamp);
         _;
     }
     //****************************************************************************************************/
