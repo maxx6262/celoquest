@@ -6,7 +6,7 @@ import CeloquestAbi from '../contract/Celoquest.abi.json'
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0x6b3c64Fcb6140C3b16CcBaAdC025d0ccb65594B0"
+const celoquestContractAddress = "0xd9145CCE52D386f254917e481eB44e9943F39138"
 let kit
 let contract
 let user
@@ -55,7 +55,7 @@ const getUser = async function() {
 }
 
         //Get Pseudo from address
-function getPseudo(_address) {
+async function getPseudo(_address) {
     let pseudo = contract.methods.getPseudo(_address).call()
     if (pseudo.trim === "") {
         pseudo = "Unknown user"
@@ -108,28 +108,32 @@ const getBalance = async function() {
 //*******************************************************************************************
     //Quests management
 const getActiveQuests  = async function() {
+    quests = []
     const _questsLength = await contract.methods.getNbQuests().call()
+    notification("Loading " + _questsLength + " stored quets")
     let _quests = []
     for (let i = 0 ; i < _questsLength ; i++) {
         let _quest = new Promise(async (resolve, reject) => {
-            let isActive = await contract.methods.isActive(_i).call()
+            let isActive = await contract.methods.isActiveQuest(i).call()
             if (isActive) {
                 let p = await contract.methods.getActiveQuest(i).call()
+                let _pseudo = await getPseudo(p[0])
                 resolve({
-                    id: i,
-                    owner: p[0],
-                    title: p[1],
-                    content: p[2],
-                    cUsdReward: p[3],
-                    questTokenReward: p[4],
-                    nbContributions: p[5],
+                    id:                 i,
+                    owner:              p[0],
+                    pseudo:             _pseudo,
+                    title:              p[1],
+                    content:            p[2],
+                    cUsdReward:         p[3],
+                    cqtReward:          p[4],
+                    nbContributions:    p[5],
                 })
             }
         })
         _quests.push(_quest)
     }
     quests = await Promise.all(_quests)
-    renderQuestsList()
+    notificationOff()
 }
 
 function renderQuestsList() {
@@ -150,6 +154,8 @@ function questTemplate(_quest) {
         ${identiconTemplate(_quest.owner)}
         </div>
         <h2 class="card-title fs-4 fw-bold mt-2">${_quest.title}</h2>
+        <br>
+        <h3 class="card-tile fs-4 fw-bold mt-1">${_quest.pseudo}</h3>
         <p class="card-text mb-4" style="min-height: 82px">
           ${_quest.content}             
         </p>
@@ -190,7 +196,92 @@ async function addQuest(_title, _content, _cUsdReward, _cqtReward, _nbActiveDays
 
 //***********************************************************************************************
         //Contributions management
+/*
+async function getContrib(_contribId) {
+    const result    = await contract.methods.readContribution(_contribId).call()
+    let _pseudo     = getPseudo(result[1])
+    const contrib   = {
+        id:         _contribId,
+        owner:      result[1],
+        pseudo:     _pseudo,
+        content:    result[3],
+        nbVotes:    result[4],
+    }
+    return contrib
+}
+*/
 
+function contribTemplate(_contrib) {
+    return `<div class="card mb4 contrib">
+            <div class="card-body text-left p-4 position-relative">
+                <div class="translate-middle-y position-absolute top-0">
+                    $(identiconTemplate(_contrib.owner)}    
+                </div>
+                <h2 class="card-title fs-4 fw-bold mt-2"> ${_contrib.pseudo} </h2>
+                <p class="card-text mb-4" style="min-height: 82px">
+                    ${_contrib.content}             
+                </p>    
+                <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
+                </div>
+                <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3">
+                    ${_contrib.nbVotes} votes
+                </a>
+            </div>
+            </div>
+        `
+}
+
+async function loadContribs(_questId) {
+    const resultQuest = await contract.methods.getQuest(_questId).call()
+    const QuestPseudo = getPseudo(resultQuest[0])
+    const Quest = {
+        id:             _questId,
+        owner:          resultQuest[0],
+        pseudo:         QuestPseudo,
+        title:          resultQuest[1],
+        content:        resultQuest[2],
+        nbContribs:     resultQuest[3],
+        isActive:       resultQuest[4],
+    }
+    quests = [Quest]
+    let _contribs = []
+    for (let i = 0 ; i < Quest.nbContribs ; i++) {
+        let _contrib  =   new Promise( async (resolve, reject)  => {
+            let _contribId = await contract.methods.getContribId(_questId, i)
+            let p          = await contract.methods.readContribution(_contribId)
+            resolve({
+                contribId: p[0],
+                questId: _questId,
+                owner: p[1],
+                pseudo: getPseudo(p[1]),
+                content: p[2],
+                nbVotes: p[3],
+            })
+        })
+        _contribs.push(_contrib)
+    }
+    contributions = await Promise.all(_contribs)
+}
+
+function renderContributionsList() {
+    document.getElementById("celoquest").innerHTML =
+        questHeaderTemplate(quests[0])
+    loadContribs(quests[0].id)
+    contributions.forEach((_contribution) => {
+        const newDiv = document.createElement("div")
+        newDiv.className = "col-md-4"
+        newDiv.innerHTML = contribTemplate(_contribution)
+        document.getElementById('celoquest').appendChild(newDiv)
+    })
+}
+
+function questHeaderTemplate(_quest) {
+    return ` <div class="header" id="questHeader">
+            ${identiconTemplate(_quest.owner)}
+            <h1> ${_quest.title} </h1>
+            <p> ${_quest.content} </p>
+            </div>`
+}
 
 
 
@@ -231,7 +322,7 @@ document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
         }
 })
 
-        //Set Pseudo
+        //Set Pseudo : when user click on pseudo on user block
 document
     .querySelector("#newPseudoBtn").addEventListener("click", async (e) => {
             const _newPseudo = document.getElementById("newPseudo").value
