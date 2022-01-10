@@ -228,6 +228,70 @@
       </div>
     </div>
 <!--/userModal-->
+<!--contributionModal-->
+<div
+      class="modal fade"
+      id="newContribModal"
+      tabindex="-1"
+      aria-labelledby="newQuestModalLabel"
+      aria-hidden="true"
+    >
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newContribModalLabel">New Contribution</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-row">
+            <div class="col">
+              <input
+                type="text"
+                id="questTitle"
+                class="form-control mb-2"
+                placeholder="Enter Quest Title"
+              />
+            </div>
+            <div class="col">
+              <input
+                type="text"
+                id="newContribContent"
+                class="form-control mb-2"
+                placeholder="Enter Contribution content"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-light border"
+      data-bs-dismiss="modal"
+    >
+        Close
+    </button>
+    <button
+      type="button"
+      class="btn btn-dark"
+      data-bs-dismiss="modal"
+      id="newContribBtn"
+    >
+      Add Contribution
+    </button>
+    <p>
+    </p>
+  </div>
+</div>
+<!--/contributionModal-->
     <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
