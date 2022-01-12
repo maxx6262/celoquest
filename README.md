@@ -9,6 +9,7 @@
   Get <strong> answers/contribution </strong> by <em> community members</em>. Be <strong> rewarded </strong> by posting best <i>contribution</i> on the <strong>quest event</strong>.
 </p>
 
+First Release on Githup page <a href="https://maxx6262.github.io/celoquest/"> here </a>
 
 
 <ol>
