@@ -2,7 +2,6 @@ import Web3 from 'web3'
 import { newKitFromWeb3 } from '@celo/contractkit'
 import BigNumber from 'bignumber.js'
 import CeloquestAbi from '../contract/Celoquest.abi.json'
-import {id} from "html-webpack-plugin/lib/chunksorter";
 
 const ERC20_DECIMALS = 18
 
@@ -115,7 +114,7 @@ const getActiveQuests  = async function() {
     let _quests = []
     for (let i = 0 ; i < _questsLength ; i++) {
         let p = await contract.methods.getActiveQuest(i).call()
-        let _pseudo = await getPseudo(p[0])
+        let _pseudo = await contract.methods.getPseudo(i).call()
         let _quest = {
             id:                 i,
             owner:              p[0],
