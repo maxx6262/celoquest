@@ -99,6 +99,7 @@
       aria-hidden="true"
     >
       <div class="modal-dialog">
+        <form>
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="newQuestModalLabel">New Quest</h5>
@@ -110,7 +111,6 @@
             ></button>
           </div>
           <div class="modal-body">
-            <form>
               <div class="form-row">
                 <div class="col">
                   <input
@@ -144,9 +144,7 @@
                     placeholder="Enter CQT Quest Reward"
                   />
                 </div>
-                </div>
               </div>
-            </form>
           </div>
           <div class="modal-footer">
             <button
@@ -154,7 +152,7 @@
               class="btn btn-light border"
               data-bs-dismiss="modal"
             >
-              Close
+                Close
             </button>
             <button
               type="button"
@@ -162,12 +160,11 @@
               data-bs-dismiss="modal"
               id="newQuestBtn"
             >
-              Add Quest
+                Add Quest
             </button>
-            <p>
-            </p>
           </div>
         </div>
+        </form>
       </div>
     </div>
 <!--/Modal-->
@@ -253,9 +250,9 @@
             <div class="col">
               <input
                 type="text"
-                id="questTitle"
+                id="newContributionTitle"
                 class="form-control mb-2"
-                placeholder="Enter Quest Title"
+                placeholder="Enter Contribution Title"
               />
             </div>
             <div class="col">
@@ -269,8 +266,6 @@
           </div>
         </div>
       </div>
-    </form>
-  </div>
   <div class="modal-footer">
     <button
       type="button"
@@ -287,8 +282,8 @@
     >
       Add Contribution
     </button>
-    <p>
-    </p>
+  </div>
+  </form>
   </div>
 </div>
 <!--/contributionModal-->

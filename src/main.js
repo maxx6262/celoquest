@@ -6,7 +6,8 @@ import CeloquestAbi from '../contract/Celoquest.abi.json'
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0x7f45B8139AdaFAFf953AC374d191502EA982B1A7"
+const celoquestContractAddress = "0x0d796Ac63f41d48c3592b5f6eE73A673E9D6Fa53"
+let nbQuests
 let kit
 let contract
 let user
@@ -30,7 +31,7 @@ const connectCeloWallet = async function () {
             kit.defaultAccount = accounts[0]
 
             contract = new web3.eth.Contract(CeloquestAbi, celoquestContractAddress)
-
+            nbQuests = await contract.methods.getNbQuests().call()
         } catch (error) {
             notification(`⚠️ ${error}.`)
         }
@@ -114,7 +115,7 @@ const getActiveQuests  = async function() {
     let _quests = []
     for (let i = 0 ; i < _questsLength ; i++) {
         let p = await contract.methods.getActiveQuest(i).call()
-        let _pseudo = await contract.methods.getPseudo(i).call()
+        let _pseudo = await contract.methods.getQuestOwnerPseudo(i).call()
         let _quest = {
             id:                 i,
             owner:              p[0],
@@ -166,6 +167,23 @@ function questTemplate(_quest) {
       </div>
     </div>`
 }
+
+async function storeQuest(_newQuest) {
+    try {
+        notification("Adding New Quest")
+        await contract.methods.createQuest(
+            _newQuest.title,
+            _newQuest.content,
+            _newQuest.cUsdReward,
+            _newQuest.cqtReward,
+            _newQuest.nbActiveDays
+        ).send({from: _newQuest.owner})
+        notificationOff()
+    } catch (error) {
+        notification(error)
+    }
+}
+
 
 async function addQuest(_title, _content, _cUsdReward, _cqtReward, _nbActiveDays) {
     try {
@@ -279,6 +297,15 @@ function questHeaderTemplate(_quest) {
             </div>`
 }
 
+async function addContribution(_questId, _title, _content) {
+    try {
+        notification("Adding contribution")
+        await contract.methods.createContribution(_questId, _title, _content);
+        notificationOff()
+    } catch (error) {
+        notification(error)
+    }
+}
 
 
 //***********************************************************************************************
@@ -306,13 +333,16 @@ window.addEventListener('load', async () => {
 });
         //New Quest Creation Event
 document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
-        try  {
-            addQuest(
-                document.getElementById("newQuestTitle").value,
-                document.getElementById("newQuestContent").value,
-                document.getElementById("newcUSDReward").value,
-                document.getElementById("newCQTReward").value,
-                1)
+        try  { const _newQuest = {
+            id:             nbQuests,
+            owner:          kit.defaultAccount,
+            title:          document.getElementById('newQuestTitle').value,
+            content:        document.getElementById('newQuestContent').value,
+            cUsdReward:     document.getElementById('newcUSDReward').value,
+            cqtReward:      document.getElementById('newCQTReward').value,
+            nbActiveDays:   7,
+            }
+        storeQuest(_newQuest)
         } catch (error) {
             console.log(error)
         }

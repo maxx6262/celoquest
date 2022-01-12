@@ -191,6 +191,7 @@ contract Celoquest {
     struct  Contribution {
         uint                questId;
         address payable     owner;
+        string              title;
         string              content;
         uint                nbVotes;
     }
@@ -219,6 +220,11 @@ contract Celoquest {
         contributions[_contributionId].content,
         contributions[_contributionId].nbVotes
         );
+    }
+
+    function getContributionTitle(uint _contributionId) public view returns(string memory) {
+        require(_contributionId < nbContributions, "Contribution not found");
+        return contributions[_contributionId].title;
     }
 
     //**********************************************************************************************************/
@@ -371,12 +377,13 @@ contract Celoquest {
         * @param _content  content of contribution
         * @dev Only one contribution per address until deadline is reached
     */
-    function createContribution(uint _questId, string memory _content)
+    function createContribution(uint _questId, string memory _title, string memory _content)
     external onlyUser(msg.sender) {
         require(!(quests[_questId].userContribution[msg.sender] > 0 ), "User already contribute to Quest");
         contributions[nbContributions] = Contribution(
             _questId,
             payable(msg.sender),
+            _title,
             _content,
             0);
         quests[_questId].nbContributions++;
