@@ -159,7 +159,10 @@ function questTemplate(_quest) {
        <div class="d-grid gap-2">
         <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
         </div>
-        <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" id="${_quest.id}">
+        <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" 
+           data-bs-toggle="modal"
+           data-bs-target="#newContribModal 
+           "id="${_quest.id}">
             Contribute to get ${_quest.cUsdReward} cUSD
                 and  ${_quest.cqtReward} CQT
         </a>
