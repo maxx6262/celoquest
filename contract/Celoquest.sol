@@ -255,6 +255,13 @@ contract Celoquest {
         return nbQuests;
     }
 
+    /** * @param _questId : id of Quest
+        * @dev Return pseudo of quest owner
+    */
+    function getQuestOwnerPseudo(uint _questId) public view returns(string memory) {
+        require(_questId < nbQuests, "Quest not found");
+        return userPseudo[quests[_questId].owner];
+    }
 
     /** * @param _questId : id of quest
         * @dev return nb of contributions for this Quest

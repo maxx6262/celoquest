@@ -7,7 +7,7 @@ import {id} from "html-webpack-plugin/lib/chunksorter";
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0xB41D661F3C3B054852dA71F1a57fF63E9301c0D2"
+const celoquestContractAddress = "0x7f45B8139AdaFAFf953AC374d191502EA982B1A7"
 let kit
 let contract
 let user
@@ -161,7 +161,7 @@ function questTemplate(_quest) {
         </div>
         <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" id="${_quest.id}">
             Contribute to get ${_quest.cUsdReward} cUSD
-                and  ${_quest.questTokenReward} CQT
+                and  ${_quest.cqtReward} CQT
         </a>
        </div>
       </div>
