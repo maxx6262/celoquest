@@ -6,7 +6,7 @@ import CeloquestAbi from '../contract/Celoquest.abi.json'
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0x0d796Ac63f41d48c3592b5f6eE73A673E9D6Fa53"
+const celoquestContractAddress = "0xC86625dFbA7277Bb3CB4d8c507E939953FA70D89"
 let nbQuests
 let kit
 let contract
