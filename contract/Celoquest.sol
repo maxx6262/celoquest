@@ -210,6 +210,7 @@ contract Celoquest {
     function readContribution(uint _contributionId) public view returns(
         uint,            //QuestId
         address payable, //Contribution owner
+        string memory,   //Contribution title
         string memory,   //Contribution content
         uint            //nbVotes
     ) {
@@ -217,6 +218,7 @@ contract Celoquest {
         return(
         contributions[_contributionId].questId,
         contributions[_contributionId].owner,
+        contributions[_contributionId].title,
         contributions[_contributionId].content,
         contributions[_contributionId].nbVotes
         );

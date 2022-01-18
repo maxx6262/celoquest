@@ -11,6 +11,8 @@ let nbQuests
 let kit
 let contract
 let user
+let focusedQuest
+let focusedContrib
 let quests = []
 let contributions = []
 
@@ -359,11 +361,79 @@ document
                 const result = await contract.methods
                     .setPseudo(_newPseudo)
                     .send({from: kit.defaultAccount})
+                    user = _newPseudo;
+                    notification(`🎉You succesfully set pseudo "${user.pseudo}" for address ${kit.defaultAccount}.`)
+
             } catch (error) {
                 notification(`⚠️ ${error}.`)
             }
-            user = _newPseudo;
-            notification(`🎉You succesfully set pseudo "${user.pseudo}" for address ${kit.defaultAccount}.`)
             getUser()
             getActiveQuests()
     })
+
+//*******************************************************************************************************/
+async function loadQuest(_questId) {
+    try {
+        const rep = await contract.methods.getQuest(_questId).call()
+        try {
+            let _owner = rep[0]
+            const ownerUserRep = await contract.methods.readUser(_owner).call()
+            let _user = {
+                owner:          _owner,
+                pseudo:         ownerUserRep[0],
+                nbQuests:       ownerUserRep[1],
+                nbContribs:     ownerUserRep[2],
+                cqtBalance:     ownerUserRep[3],
+                cUsdBalance:    ownerUserRep[4],
+            }
+            let _quest = {
+                id:         _questId,
+                owner:      _user,
+                title:      rep[1],
+                content:    rep[2],
+                nbContribs: rep[3],
+                contribs:   [],
+                isActive:   rep[4],
+            }
+            if (_quest.isActive) {
+                for (let i = 0 ; i < _quest.nbContribs ; i++) {
+                    try {
+                        const _contribId = await contract.methods.getContribId(_questId, i).call()
+                        try {
+                            const contribRep = await contract.methods.readContribution(_contribId).call()
+                            try {
+                                let contribOwner    =   contribRep[1]
+                                const _contribOwnerUser = await contract.methods.readUser(contribRep).call()
+                                let _contribUser = {
+                                    owner:          contribOwner,
+                                    pseudo:         _contribOwnerUser[0],
+                                    nbQuests:       _contribOwnerUser[1],
+                                    nbContribs:     _contribOwnerUser[2],
+                                    cqtBalance:     _contribOwnerUser[3],
+                                    cUsdBalance:    _contribOwnerUser[4],
+                                }
+                                let _contrib = {
+                                    id:             _contribId,
+                                    owner:          _contribUser,
+                                    title:          contribRep[2],
+                                    content:        contribRep[3],
+                                    nbVotes:        contribRep[4],
+                                }
+                                _quest.contribs.push(_contrib)
+                                focusedQuest = _quest
+                            }
+                        } catch (error) {
+                            notification(`⚠️ ${error}.`)
+                        }
+                    } catch (error) {
+                        notification(`⚠️ ${error}.`)
+                    }
+                }
+            }
+        } catch (error) {
+            notification(`⚠️ ${error}.`)
+        }
+    }  catch (error) {
+        notification(`⚠️ ${error}.`)
+    }
+}
