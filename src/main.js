@@ -421,6 +421,8 @@ async function loadQuest(_questId) {
                                 }
                                 _quest.contribs.push(_contrib)
                                 focusedQuest = _quest
+                            } catch (error) {
+                                notification(`⚠️ ${error}.`)
                             }
                         } catch (error) {
                             notification(`⚠️ ${error}.`)
