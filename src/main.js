@@ -11,10 +11,10 @@ let nbQuests
 let kit
 let contract
 let user
-let focusedQuest
-let focusedContrib
 let quests = []
 let contributions = []
+let quest = {}
+let nbContribs
 
 //***********************************************************************************************
 
@@ -112,7 +112,10 @@ const getBalance = async function() {
     //Quests management
 const getActiveQuests  = async function() {
     quests = []
+
+    nbContribs = await contract.methods.getNbContributions().call()
     const _questsLength = await contract.methods.getNbQuests().call()
+
     notification("Loading " + _questsLength + " stored quets")
     let _quests = []
     for (let i = 0 ; i < _questsLength ; i++) {
@@ -141,6 +144,7 @@ function renderQuestsList() {
         const newDiv = document.createElement("div")
         newDiv.className = "col-md-4"
         newDiv.innerHTML = questTemplate(_quest)
+        newDiv.addEventListener('click', loadQuest(_quest.id), false)
         document.getElementById('celoquest').appendChild(newDiv)
     })
 }
@@ -154,6 +158,7 @@ function questTemplate(_quest) {
         </div>
         <h2 class="card-title fs-4 fw-bold mt-2">${_quest.title}</h2>
         <br>
+        <div class="questId" style="display: none">${_quest.id}</div>
         <h3 class="card-tile fs-4 fw-bold mt-1">${_quest.pseudo}</h3>
         <p class="card-text mb-4" style="min-height: 82px">
           ${_quest.content}             
@@ -161,10 +166,10 @@ function questTemplate(_quest) {
        <div class="d-grid gap-2">
         <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
         </div>
+        
         <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" 
            data-bs-toggle="modal"
-           data-bs-target="#newContribModal 
-           "id="${_quest.id}">
+           data-bs-target="#newContribModal">
             Contribute to get ${_quest.cUsdReward} cUSD
                 and  ${_quest.cqtReward} CQT
         </a>
@@ -325,52 +330,6 @@ function notificationOff() {
     document.querySelector(".alert").style.display = "None"
 }
 
-//********************************************************************************************
-
-        //Event listeners
-window.addEventListener('load', async () => {
-    notification("⌛ Loading...")
-    await connectCeloWallet()
-    await getBalance()
-    await getUser()
-    await getActiveQuests()
-    notificationOff()
-});
-        //New Quest Creation Event
-document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
-        try  { const _newQuest = {
-            id:             nbQuests,
-            owner:          kit.defaultAccount,
-            title:          document.getElementById('newQuestTitle').value,
-            content:        document.getElementById('newQuestContent').value,
-            cUsdReward:     document.getElementById('newcUSDReward').value,
-            cqtReward:      document.getElementById('newCQTReward').value,
-            nbActiveDays:   7,
-            }
-        storeQuest(_newQuest)
-        } catch (error) {
-            console.log(error)
-        }
-})
-
-        //Set Pseudo : when user click on pseudo on user block
-document
-    .querySelector("#newPseudoBtn").addEventListener("click", async (e) => {
-            const _newPseudo = document.getElementById("newPseudo").value
-            try {
-                const result = await contract.methods
-                    .setPseudo(_newPseudo)
-                    .send({from: kit.defaultAccount})
-                    user = _newPseudo;
-                    notification(`🎉You succesfully set pseudo "${user.pseudo}" for address ${kit.defaultAccount}.`)
-
-            } catch (error) {
-                notification(`⚠️ ${error}.`)
-            }
-            getUser()
-            getActiveQuests()
-    })
-
 //*******************************************************************************************************/
 async function loadQuest(_questId) {
     try {
@@ -420,7 +379,7 @@ async function loadQuest(_questId) {
                                     nbVotes:        contribRep[4],
                                 }
                                 _quest.contribs.push(_contrib)
-                                focusedQuest = _quest
+                                quest = _quest
                             } catch (error) {
                                 notification(`⚠️ ${error}.`)
                             }
@@ -439,3 +398,70 @@ async function loadQuest(_questId) {
         notification(`⚠️ ${error}.`)
     }
 }
+
+
+
+//********************************************************************************************
+
+        //Event listeners
+window.addEventListener('load', async () => {
+    notification("⌛ Loading...")
+    await connectCeloWallet()
+    await getBalance()
+    await getUser()
+    await getActiveQuests()
+    notificationOff()
+});
+
+        //New Quest Creation Event
+document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
+        try  { const _newQuest = {
+            id:             nbQuests,
+            owner:          kit.defaultAccount,
+            title:          document.getElementById('newQuestTitle').value,
+            content:        document.getElementById('newQuestContent').value,
+            cUsdReward:     document.getElementById('newcUSDReward').value,
+            cqtReward:      document.getElementById('newCQTReward').value,
+            nbActiveDays:   7,
+            }
+        storeQuest(_newQuest)
+        } catch (error) {
+            console.log(error)
+        }
+})
+
+        //New Contrib Event
+document.querySelector("#newContribBtn").addEventListener("click", async () => {
+    try {
+        const _newContrib = {
+            id:             nbContribs,
+            owner:          kit.defaultAccount,
+            questId:        quest.id,
+            title:          document.getElementById('newContributionTitle').value,
+            content:        document.getElementById('newContributionContent').value,
+        }
+        await contract.methods.createContribution(_newContrib.questId, _newContrib.title, _newContrib.content)
+            .send({ from: kit.defaultAccount})
+            renderContributionsList()
+    } catch (error) {
+        notification(error)
+    }
+})
+
+        //Set Pseudo : when user click on pseudo on user block
+document
+    .querySelector("#newPseudoBtn").addEventListener("click", async (e) => {
+            const _newPseudo = document.getElementById("newPseudo").value
+            try {
+                const result = await contract.methods
+                    .setPseudo(_newPseudo)
+                    .send({from: kit.defaultAccount})
+                    user = _newPseudo;
+                    notification(`🎉You succesfully set pseudo "${user.pseudo}" for address ${kit.defaultAccount}.`)
+
+            } catch (error) {
+                notification(`⚠️ ${error}.`)
+            }
+            getUser()
+            getActiveQuests()
+    })
