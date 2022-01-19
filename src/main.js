@@ -1,21 +1,20 @@
 import Web3 from 'web3'
 import { newKitFromWeb3 } from '@celo/contractkit'
-import BigNumber from 'bignumber.js'
 import CeloquestAbi from '../contract/Celoquest.abi.json'
 
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
 const celoquestContractAddress = "0xC86625dFbA7277Bb3CB4d8c507E939953FA70D89"
-let nbQuests
+let nbQuests = 0
 let kit
 let contract
-let user
+let user = {}
 let quests = []
 let contributions = []
 let quest = {}
 let nbContribs = 0
-let focusedQuestId
+let focusedQuestId = 0
 //***********************************************************************************************
 
     //Connec Web3 wallet to the chain
@@ -112,7 +111,8 @@ const getBalance = async function() {
     //Quests management
 
         //Setting current focused Quest ID
-const setQuestIdOnContribModal = function(_questId) {
+function setQuestIdOnContribModal (_questId) {
+    console.log(_questId)
     focusedQuestId = _questId
     quest = quests[_questId]
 }
@@ -120,7 +120,6 @@ const setQuestIdOnContribModal = function(_questId) {
         //Get all active Quests
 const getAllQuests  = async function() {
     quests = []
-    nbContribs = await contract.methods.getNbContributions().call()
     const _questsLength = await contract.methods.getNbQuests().call()
     try {
         notification("Loading " + _questsLength + " stored quets")
@@ -172,9 +171,8 @@ function questTemplate(_quest) {
         <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" 
            data-bs-toggle="modal"
            data-bs-target="#newContribModal"
-           onclick=setQuestIdOnContribModal
-           
-           (${_quest.id})>
+           onclick="setQuestIdOnContribModal(${_quest.id})"
+           > <div id="questId" style="display: none"> ${_quest.id} </div>
             Contribute to get ${_quest.cUsdReward} cUSD
                 and  ${_quest.cqtReward} CQT
         </a>
@@ -260,7 +258,7 @@ function contribTemplate(_contrib) {
         `
 }
 
-async function loadContribs(_questId) {
+const loadContribs = async function (_questId) {
     const resultQuest = await contract.methods.getQuest(_questId).call()
     const QuestPseudo = getPseudo(resultQuest[0])
     const Quest = {
@@ -292,23 +290,22 @@ async function loadContribs(_questId) {
     contributions = await Promise.all(_contribs)
 }
 
-function questHeaderTemplate(_quest) {
+const questHeaderTemplate = function (_questId) {
     try {
         notification('Loading Quest Header')
-        loadQuest(_quest.id)
-        _quest = quest
-        notificationOff()
-    } catch (error) {
-        notification(error)
-    }
-    return ` <br>
+        loadQuest(_questId)
+            .then(notificationOff)
+        return (` <br>
             <h1> Contribution's list </h1>
              <div class="header" id="questHeader">
             ${identiconTemplate(_quest.owner)}
             <h2> ${_quest.title} </h2>
             <h3> ${_quest.content} </h3>
             </div>
-`
+            `)
+        } catch (error) {
+            notification(error)
+    }
 }
 
         //Rending all contributions from QuestId
@@ -357,7 +354,7 @@ async function renderContributionsList(questId) {
 }
 
 //*******************************************************************************************************/
-async function loadQuest(_questId) {
+const loadQuest = async function (_questId) {
     try {
         const rep = await contract.methods.getQuest(_questId).call()
         try {
@@ -412,12 +409,12 @@ async function renderQuestsList() {
 
 
         //Adding contribution at Quest
-async function addContribution(_questId, _title, _content) {
+const addContribution = async function (_questId, _title, _content) {
     try {
         notification("Adding contribution")
         await contract.methods.createContribution(_questId, _title, _content)
-            .send({ from: kit.defaultAccount });
-        notificationOff()
+            .send({ from: kit.defaultAccount })
+            .then(notificationOff())
     } catch (error) {
         notification(error)
     }
@@ -472,12 +469,13 @@ document.querySelector("#newContribBtn").addEventListener("click", async () => {
         const _newContrib = {
             id:             nbContribs,
             owner:          kit.defaultAccount,
-            questId:        focusedQuestId,
+            questId:        quest.id,
             title:          document.getElementById('newContributionTitle').value,
             content:        document.getElementById('newContributionContent').value,
+            nbVotes:        0,
         }
         await addContribution(_newContrib.questId, _newContrib.title, _newContrib.content)
-        renderContributionsList(focusedQuestId)
+        renderContributionsList(quest.id)
     } catch (error) {
         notification(error)
     }
