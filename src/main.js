@@ -134,19 +134,19 @@ const getActiveQuests  = async function() {
         _quests.push(_quest)
         }
     quests = _quests
-    renderQuestsList()
+    await renderQuestsList()
     notificationOff()
 }
 
-function renderQuestsList() {
+async function renderQuestsList() {
     document.getElementById("celoquest").innerHTML = ""
-    quests.forEach((_quest) => {
+    for (const _quest of quests) {
         const newDiv = document.createElement("div")
         newDiv.className = "col-md-4"
         newDiv.innerHTML = questTemplate(_quest)
-        newDiv.addEventListener('click', loadQuest(_quest.id), false)
+        newDiv.addEventListener('click', await loadQuest(_quest.id), false)
         document.getElementById('celoquest').appendChild(newDiv)
-    })
+    }
 }
         //Template to display Quest on Dasboard list
 function questTemplate(_quest) {
@@ -212,7 +212,7 @@ async function addQuest(_title, _content, _cUsdReward, _cqtReward, _nbActiveDays
         notification(`🎉 You successfully added "${_newQuest.title}".`)
         quests.push(_newQuest)
         getBalance()
-        renderQuestsList()
+        await renderQuestsList()
     } catch (error) {
         notification(`⚠️ ${error}.`)
     }
@@ -220,7 +220,7 @@ async function addQuest(_title, _content, _cUsdReward, _cqtReward, _nbActiveDays
 
 //***********************************************************************************************
         //Contributions management
-/*
+
 async function getContrib(_contribId) {
     const result    = await contract.methods.readContribution(_contribId).call()
     let _pseudo     = getPseudo(result[1])
@@ -233,7 +233,6 @@ async function getContrib(_contribId) {
     }
     return contrib
 }
-*/
 
 function contribTemplate(_contrib) {
     return `<div class="card mb4 contrib">
@@ -310,7 +309,8 @@ function questHeaderTemplate(_quest) {
 async function addContribution(_questId, _title, _content) {
     try {
         notification("Adding contribution")
-        await contract.methods.createContribution(_questId, _title, _content);
+        await contract.methods.createContribution(_questId, _title, _content)
+            .send({ from: kit.defaultAccount });
         notificationOff()
     } catch (error) {
         notification(error)
@@ -440,9 +440,8 @@ document.querySelector("#newContribBtn").addEventListener("click", async () => {
             title:          document.getElementById('newContributionTitle').value,
             content:        document.getElementById('newContributionContent').value,
         }
-        await contract.methods.createContribution(_newContrib.questId, _newContrib.title, _newContrib.content)
-            .send({ from: kit.defaultAccount})
-            renderContributionsList()
+        await addContribution(_newContrib.questId, _newContrib.title, _newContrib.content)
+        renderContributionsList()
     } catch (error) {
         notification(error)
     }
