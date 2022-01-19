@@ -474,8 +474,10 @@ document.querySelector("#newContribBtn").addEventListener("click", async () => {
             content:        document.getElementById('newContributionContent').value,
             nbVotes:        0,
         }
-        await addContribution(_newContrib.questId, _newContrib.title, _newContrib.content)
-        renderContributionsList(quest.id)
+        const result = await contract.methods.creaeContribution(_newContrib.questId, _newContrib.title, _newContrib.content)
+            .send({ from: kit.defaultAccount})
+            .then(renderContributionsList(_newContrib.questId))
+            notificationOff()
     } catch (error) {
         notification(error)
     }
