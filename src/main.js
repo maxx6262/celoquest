@@ -126,12 +126,11 @@ const getAllQuests  = async function() {
         notification("Loading " + _questsLength + " stored quets")
         let _quests = []
         for (let i = 0 ; i < _questsLength ; i++) {
-            let _owner = await contract.methods.getQuestOwner(i).call()
             let _pseudo = await contract.methods.getQuestOwnerPseudo(i).call()
             let p = await contract.methods.getActiveQuest(i).call()
             let _quest = {
                 id:                 i,
-                owner:              _owner,
+                owner:              p[0],
                 pseudo:             _pseudo,
                 title:              p[1],
                 content:            p[2],
