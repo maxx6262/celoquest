@@ -112,37 +112,43 @@ const getBalance = async function() {
     //Quests management
 
         //Setting current focused Quest ID
-function setQuestIdOnContribModal(_questId) {
+const setQuestIdOnContribModal = function(_questId) {
     focusedQuestId = _questId
+    quest = quests[_questId]
 }
 
         //Get all active Quests
-const getActiveQuests  = async function() {
+const getAllQuests  = async function() {
     quests = []
-
     nbContribs = await contract.methods.getNbContributions().call()
     const _questsLength = await contract.methods.getNbQuests().call()
-
-    notification("Loading " + _questsLength + " stored quets")
-    let _quests = []
-    for (let i = 0 ; i < _questsLength ; i++) {
-        let p = await contract.methods.getActiveQuest(i).call()
-        let _pseudo = await contract.methods.getQuestOwnerPseudo(i).call()
-        let _quest = {
-            id:                 i,
-            owner:              p[0],
-            pseudo:             _pseudo,
-            title:              p[1],
-            content:            p[2],
-            cUsdReward:         p[3],
-            cqtReward:          p[4],
-            nbContributions:    p[5],
+    try {
+        notification("Loading " + _questsLength + " stored quets")
+        let _quests = []
+        for (let i = 0 ; i < _questsLength ; i++) {
+            let _owner = await contract.methods.getQuestOwner(i).call()
+            let _pseudo = await contract.methods.getQuestOwnerPseudo(i).call()
+            let p = await contract.methods.getActiveQuest(i).call()
+            let _quest = {
+                id:                 i,
+                owner:              _owner,
+                pseudo:             _pseudo,
+                title:              p[1],
+                content:            p[2],
+                cUsdReward:         p[3],
+                cqtReward:          p[4],
+                nbContributions:    p[5],
+            }
+            _quests.push(_quest)
         }
-        _quests.push(_quest)
-        }
-    quests = _quests
-    await renderQuestsList()
-    notificationOff()
+        quests = _quests
+        focusedQuestId =  0
+        quest = quests[focusedQuestId]
+        await renderQuestsList()
+        notificationOff()
+    } catch (error) {
+    notification(error)
+    }
 }
 
         //Template to display Quest on Dasboard list
@@ -288,6 +294,14 @@ async function loadContribs(_questId) {
 }
 
 function questHeaderTemplate(_quest) {
+    try {
+        notification('Loading Quest Header')
+        loadQuest(_quest.id)
+        _quest = quest
+        notificationOff()
+    } catch (error) {
+        notification(error)
+    }
     return ` <br>
             <h1> Contribution's list </h1>
              <div class="header" id="questHeader">
@@ -348,10 +362,9 @@ async function loadQuest(_questId) {
     try {
         const rep = await contract.methods.getQuest(_questId).call()
         try {
-            let _owner = rep[0]
             let _quest = {
                 id:         _questId,
-                owner:      _owner,
+                owner:      rep[0],
                 title:      rep[1],
                 content:    rep[2],
                 nbContribs: rep[3],
@@ -362,25 +375,19 @@ async function loadQuest(_questId) {
                 for (let i = 0 ; i < _quest.nbContribs ; i++) {
                     try {
                         const _contribId = await contract.methods.getContribId(_questId, i).call()
-                        try {
-                            const contribRep = await contract.methods.readContribution(_contribId).call()
-                            try {
-                                let _contribOwner    =   contribRep[1]
-                                let _contrib = {
-                                    id:             _contribId,
-                                    owner:          _contribOwner,
-                                    title:          contribRep[2],
-                                    content:        contribRep[3],
-                                    nbVotes:        contribRep[4],
-                                }
-                                _quest.contribs.push(_contrib)
-                                quest = _quest
-                            } catch (error) {
-                                notification(`⚠️ ${error}.`)
-                            }
-                        } catch (error) {
-                            notification(`⚠️ ${error}.`)
+                        const contribRep = await contract.methods.readContribution(_contribId).call()
+                        let _contribOwner    =   contribRep[1]
+                        let _contrib = {
+                            id:             _contribId,
+                            owner:          _contribOwner,
+                            title:          contribRep[2],
+                            content:        contribRep[3],
+                            nbVotes:        contribRep[4],
                         }
+                        _quest.contribs.push(_contrib)
+                        contributions.push(_contrib)
+                        quest = _quest
+                        notificationOff()
                     } catch (error) {
                         notification(`⚠️ ${error}.`)
                     }
@@ -438,7 +445,7 @@ window.addEventListener('load', async () => {
     await connectCeloWallet()
     await getBalance()
     await getUser()
-    await getActiveQuests()
+    await getAllQuests()
     notificationOff()
 });
 
@@ -492,5 +499,5 @@ document
                 notification(`⚠️ ${error}.`)
             }
             getUser()
-            getActiveQuests()
+            getAllQuests()
     })
