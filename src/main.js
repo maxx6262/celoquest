@@ -191,6 +191,7 @@ async function storeQuest(_newQuest) {
             _newQuest.nbActiveDays
         ).send({from: _newQuest.owner})
         notificationOff()
+        lo
     } catch (error) {
         notification(error)
     }
@@ -313,18 +314,20 @@ const loadContribs = async function (_questId) {
 
 const questHeaderTemplate = function (_questId) {
     try {
-        notification('Loading Quest Header')
-        loadQuest(_questId)
-        notificationOff
+        if  (focusedQuestId != _questId) {
+            notification('Loading Quest Header')
+            loadQuest(_questId)
+            notificationOff()
+        }
         return (`<div class="class="container my-12"> 
                 <br>
             <h1> Contribution's list </h1>
              <div class="header" id="questHeader">
                 <div class="translate-middle-y position-absolute top-0">
-                    ${identiconTemplate(_quest.owner)}
+                    ${identiconTemplate(quest.owner)}
                 </div>
-                <h2> ${_quest.title} </h2>
-                <h3> ${_quest.content} </h3>
+                <h2> ${quest.title} </h2>
+                <h3> ${quest.content} </h3>
             </div>
             <br>
         </div>`)
@@ -344,8 +347,8 @@ async function renderContributionsList(questId) {
     }
     document.getElementById("celoquest").innerHTML = ""
     let newHead = document.createElement("div")
-    newHead.className = "col-md-4 questHeader"
-    newHead.innerHTML = questHeaderTemplate(quest.owner)
+    newHead.className = "col-md-12 questHeader"
+    newHead.innerHTML = await questHeaderTemplate(questId)
     document.getElementById("celoquest").appendChild(newHead)
 
     let nbContribQuest = 0
@@ -482,7 +485,11 @@ document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
             cqtReward:      document.getElementById('newCQTReward').value,
             nbActiveDays:   7,
             }
-        storeQuest(_newQuest)
+            storeQuest(_newQuest)
+            notification("Quest recorded on Chain !")
+            await getAllQuests()
+            renderQuestsList()
+            notificationOff()
         } catch (error) {
             console.log(error)
         }
@@ -524,5 +531,4 @@ document
                 notification(`⚠️ ${error}.`)
             }
             getUser()
-            getAllQuests()
     })
