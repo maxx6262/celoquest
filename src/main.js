@@ -109,14 +109,15 @@ const getBalance = async function() {
 
 //*******************************************************************************************
     //Quests management
-
+/**
         //Setting current focused Quest ID
-function setQuestIdOnContribModal (_questId) {
+const setQuestIdOnContribModal = function (_questId) {
     console.log(_questId)
+    document.querySelector('#newContribModal').querySelector("#questId").innerHTML = _questId
     focusedQuestId = _questId
     quest = quests[_questId]
 }
-
+*/
         //Get all active Quests
 const getAllQuests  = async function() {
     quests = []
@@ -140,7 +141,6 @@ const getAllQuests  = async function() {
             _quests.push(_quest)
         }
         quests = _quests
-        focusedQuestId =  0
         quest = quests[focusedQuestId]
         await renderQuestsList()
         notificationOff()
@@ -159,7 +159,7 @@ function questTemplate(_quest) {
         </div>
         <h2 class="card-title fs-4 fw-bold mt-2">${_quest.title}</h2>
         <br>
-        
+        <h4> ${_quest.id}</h4>
         <h3 class="card-tile fs-4 fw-bold mt-1">${_quest.pseudo}</h3>
         <p class="card-text mb-4" style="min-height: 82px">
           ${_quest.content}             
@@ -171,7 +171,7 @@ function questTemplate(_quest) {
         <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" 
            data-bs-toggle="modal"
            data-bs-target="#newContribModal"
-           onclick="setQuestIdOnContribModal(${_quest.id})"
+           onclick="setQuestIdOnContribModal(${_quest.id});"
            > <div id="questId" style="display: none"> ${_quest.id} </div>
             Contribute to get ${_quest.cUsdReward} cUSD
                 and  ${_quest.cqtReward} CQT
@@ -464,19 +464,19 @@ document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
 
 
         //New Contrib Event
-document.querySelector("#newContribBtn").addEventListener("click", async () => {
+document.querySelector("#newContribBtn").addEventListener("click", async (e) => {
     try {
         const _newContrib = {
             id:             nbContribs,
             owner:          kit.defaultAccount,
-            questId:        quest.id,
+            questId:        document.querySelector('#newContribModal').querySelector('#questId').textContent,
             title:          document.getElementById('newContributionTitle').value,
             content:        document.getElementById('newContributionContent').value,
             nbVotes:        0,
         }
-        const result = await contract.methods.creaeContribution(_newContrib.questId, _newContrib.title, _newContrib.content)
+        const result = await contract.methods.createContribution(_newContrib.questId, _newContrib.title, _newContrib.content)
             .send({ from: kit.defaultAccount})
-            .then(renderContributionsList(_newContrib.questId))
+        renderContributionsList(_newContrib.questId)
             notificationOff()
     } catch (error) {
         notification(error)
