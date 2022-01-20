@@ -4,7 +4,30 @@
     <!-- Required meta tags -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+        let quests = []
+        let quest = {}
+        let contributions = []
+        let contribId
 
+        const setQuestIdOnContribModal = function (_questId) {
+            console.log(_questId)
+            document.querySelector('#newContribModal').querySelector("#questId").innerHTML = _questId
+            focusedQuestId = _questId
+            quest = quests[_questId]
+        }
+
+        const voteContrib = async function (_contribId) {
+            try {
+                notification("Adding new Vote")
+                await contract.methods.newVote(_contribId)
+                    .send({ from: kit.defaultAccount})
+                    .then(notificationOff())
+            } catch(error) {
+                notification(error)
+            }
+        }
+    </script>
     <!-- CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css"
@@ -230,7 +253,7 @@
       class="modal fade"
       id="newContribModal"
       tabindex="-1"
-      aria-labelledby="newQuestModalLabel"
+      aria-labelledby="newContribModalLabel"
       aria-hidden="true"
     >
   <div class="modal-dialog">
@@ -248,6 +271,7 @@
         <form>
           <div class="form-row">
             <div class="col">
+              <div id="questId" hidden> </div>
               <input
                 type="text"
                 id="newContributionTitle"
@@ -258,31 +282,31 @@
             <div class="col">
               <input
                 type="text"
-                id="newContribContent"
+                id="newContributionContent"
                 class="form-control mb-2"
                 placeholder="Enter Contribution content"
               />
             </div>
           </div>
         </div>
+        <div class="modal-footer">
+            <button
+                type="button"
+                class="btn btn-light border"
+                data-bs-dismiss="modal"
+            >
+                Close
+            </button>
+            <button
+              type="button"
+              class="btn btn-dark"
+              data-bs-dismiss="modal"
+              id="newContribBtn"
+            >
+                Add Contribution
+            </button>
+        </div>
       </div>
-  <div class="modal-footer">
-    <button
-      type="button"
-      class="btn btn-light border"
-      data-bs-dismiss="modal"
-    >
-        Close
-    </button>
-    <button
-      type="button"
-      class="btn btn-dark"
-      data-bs-dismiss="modal"
-      id="newContribBtn"
-    >
-      Add Contribution
-    </button>
-  </div>
   </form>
   </div>
 </div>
