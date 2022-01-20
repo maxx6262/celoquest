@@ -159,7 +159,6 @@ function questTemplate(_quest) {
         </div>
         <h2 class="card-title fs-4 fw-bold mt-2">${_quest.title}</h2>
         <br>
-        <h4> ${_quest.id}</h4>
         <h3 class="card-tile fs-4 fw-bold mt-1">${_quest.pseudo}</h3>
         <p class="card-text mb-4" style="min-height: 82px">
           ${_quest.content}             
@@ -224,6 +223,20 @@ async function addQuest(_title, _content, _cUsdReward, _cqtReward, _nbActiveDays
 //***********************************************************************************************
         //Contributions management
 
+        //Vote on contrib
+const voteContrib = async function (_contribId) {
+    try {
+        notification("Adding new Vote on Chain")
+        const result = await contract.methods.newVote(_contribId)
+            .send({from: kit.defaultAccount})
+            .then(notificationOff)
+    } catch (error) {
+        notification(error)
+    }
+}
+
+
+        //Get contrib by Id
 async function getContrib(_contribId) {
     const result    = await contract.methods.readContribution(_contribId).call()
     let _pseudo     = await getPseudo(result[1])
@@ -239,20 +252,28 @@ async function getContrib(_contribId) {
 }
 
 function contribTemplate(_contrib) {
-    return `<div class="card mb4 contrib">
+    return `<div class="card mb4 contrib contribCard">
             <div class="card-body text-left p-4 position-relative">
                 <div class="translate-middle-y position-absolute top-0">
                     ${identiconTemplate(_contrib.owner)}    
                 </div>
                 <h2 class="card-title fs-4 fw-bold mt-2"> ${_contrib.pseudo} </h2>
+                <div id="contribId"> ${_contrib.id}</div>
                 <p class="card-text mb-4" style="min-height: 82px">
                     ${_contrib.content}             
                 </p>    
                 <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
                 </div>
-                <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3">
-                    ${_contrib.nbVotes} votes
-                </a>
+                <button class=btn btn-dark voteBtn"
+                        onclick='voteContrib(${_contrib.id}='
+                > 
+                    Vote 
+                </button>
+                                
+                <div class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3"
+                        ${_contrib.nbVotes} votes
+                </div>
+                </div>
             </div>
             </div>
         `
@@ -294,15 +315,19 @@ const questHeaderTemplate = function (_questId) {
     try {
         notification('Loading Quest Header')
         loadQuest(_questId)
-            .then(notificationOff)
-        return (` <br>
+        notificationOff
+        return (`<div class="class="container my-12"> 
+                <br>
             <h1> Contribution's list </h1>
              <div class="header" id="questHeader">
-            ${identiconTemplate(_quest.owner)}
-            <h2> ${_quest.title} </h2>
-            <h3> ${_quest.content} </h3>
+                <div class="translate-middle-y position-absolute top-0">
+                    ${identiconTemplate(_quest.owner)}
+                </div>
+                <h2> ${_quest.title} </h2>
+                <h3> ${_quest.content} </h3>
             </div>
-            `)
+            <br>
+        </div>`)
         } catch (error) {
             notification(error)
     }
@@ -319,7 +344,8 @@ async function renderContributionsList(questId) {
     }
     document.getElementById("celoquest").innerHTML = ""
     let newHead = document.createElement("div")
-    newHead.innerHTML = questHeaderTemplate(quests[questId])
+    newHead.className('col-md-4 questHeader')
+    newHead.innerHTML = questHeaderTemplate(quest.owner)
     document.getElementById("celoquest").appendChild(newHead)
 
     let nbContribQuest = 0
@@ -340,7 +366,7 @@ async function renderContributionsList(questId) {
                     nbVotes: _contribRep[4],
                 }
                 const newDiv = document.createElement("div")
-                newDiv.className = "col-md-4"
+                newDiv.className = "col-md-4 contribBlock"
                 newDiv.innerHTML = contribTemplate(_contrib)
                 document.getElementById('celoquest').appendChild(newDiv)
                 notificationOff()
