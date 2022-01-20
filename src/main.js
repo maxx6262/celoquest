@@ -344,7 +344,7 @@ async function renderContributionsList(questId) {
     }
     document.getElementById("celoquest").innerHTML = ""
     let newHead = document.createElement("div")
-    newHead.className('col-md-4 questHeader')
+    newHead.className = "col-md-4 questHeader"
     newHead.innerHTML = questHeaderTemplate(quest.owner)
     document.getElementById("celoquest").appendChild(newHead)
 
