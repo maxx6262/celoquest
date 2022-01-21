@@ -1,0 +1,817 @@
+{
+  "compiler": {
+    "version": "0.8.7+commit.e28d00a7"
+  },
+  "language": "Solidity",
+  "output": {
+    "abi": [
+      {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "questId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "address payable",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "contributionId",
+            "type": "uint256"
+          }
+        ],
+        "name": "NewContribution",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "cUsdReward",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "questTokenReward",
+            "type": "uint256"
+          }
+        ],
+        "name": "NewQuest",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "NewQuestTokenTransfer",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "address payable",
+            "name": "winnerAddress",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "questId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "questTokenAmount",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "cUsdAmount",
+            "type": "uint256"
+          }
+        ],
+        "name": "NewRewardPayment",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "questId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "contributionId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "userAddress",
+            "type": "address"
+          }
+        ],
+        "name": "NewVote",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address payable",
+            "name": "_to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "_sendCUsdToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_newAmount",
+            "type": "uint256"
+          }
+        ],
+        "name": "_setNewInitialQuestTokenBalance",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address payable",
+            "name": "_newOwnerAddress",
+            "type": "address"
+          }
+        ],
+        "name": "_setNewOwner",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "_withdrawQuestToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_questId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "_title",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "_content",
+            "type": "string"
+          }
+        ],
+        "name": "createContribution",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "string",
+            "name": "_title",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "_content",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_cUsdReward",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_questTokenReward",
+            "type": "uint256"
+          }
+        ],
+        "name": "createQuest",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_questId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_contribInternalId",
+            "type": "uint256"
+          }
+        ],
+        "name": "getContribId",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_contributionId",
+            "type": "uint256"
+          }
+        ],
+        "name": "getContributionTitle",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "getNbContributions",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "getNbQuests",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "getNbUsers",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "getOwner",
+        "outputs": [
+          {
+            "internalType": "address payable",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_userAddress",
+            "type": "address"
+          }
+        ],
+        "name": "getPseudo",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_questId",
+            "type": "uint256"
+          }
+        ],
+        "name": "getQuestNbContribs",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_questId",
+            "type": "uint256"
+          }
+        ],
+        "name": "getQuestOwnerPseudo",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_questId",
+            "type": "uint256"
+          }
+        ],
+        "name": "getQuestTitle",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_questId",
+            "type": "uint256"
+          }
+        ],
+        "name": "getWinningContribution",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_questId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "_sender",
+            "type": "address"
+          }
+        ],
+        "name": "hasContribute",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_contributionId",
+            "type": "uint256"
+          }
+        ],
+        "name": "newVote",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_userAddress",
+            "type": "address"
+          }
+        ],
+        "name": "questTokenBalanceOf",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_contributionId",
+            "type": "uint256"
+          }
+        ],
+        "name": "readContribution",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address payable",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_questId",
+            "type": "uint256"
+          }
+        ],
+        "name": "readQuest",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_userAddress",
+            "type": "address"
+          }
+        ],
+        "name": "readUser",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "string",
+            "name": "_newPseudo",
+            "type": "string"
+          }
+        ],
+        "name": "setPseudo",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_from",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "transferQuestToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_questId",
+            "type": "uint256"
+          }
+        ],
+        "name": "withdrawReward",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ],
+    "devdoc": {
+      "kind": "dev",
+      "methods": {
+        "constructor": {
+          "details": "Contract is ownable - Owner can withdraw rewards amount locked to winner or   back to quest's creators   => QuestToken will become full ERC20 token users could withdraw on their wallet"
+        },
+        "createContribution(uint256,string,string)": {
+          "details": "Only one contribution per address until deadline is reached",
+          "params": {
+            "_content": "content of contribution",
+            "_questId": "ID of Quest user would contribute"
+          }
+        },
+        "createQuest(string,string,uint256,uint256)": {
+          "details": "owner create Quest with Rewards = _cUsdAmount of cUsd token and _questTokenAmount of questToken           - Users can contribute until deadline           - Users can vote until deadline + 1 day",
+          "params": {
+            "_cUsdReward": "is cUsd reward amount Quest's owner will pay to winner",
+            "_content": "is Quest explanation/description",
+            "_questTokenReward": "is QuestToken reward amount Quest's owner will pay to winner"
+          }
+        },
+        "getContribId(uint256,uint256)": {
+          "details": "return public contribId from Quest internal id of contribID",
+          "params": {
+            "_contribInternalId": "Quest internal contribID",
+            "_questId": ":  id of Quest"
+          }
+        },
+        "getPseudo(address)": {
+          "details": "get User pseudo",
+          "params": {
+            "_userAddress": ": Address to read"
+          }
+        },
+        "getQuestNbContribs(uint256)": {
+          "details": "return nb of contributions for this Quest",
+          "params": {
+            "_questId": ": id of quest"
+          }
+        },
+        "getQuestOwnerPseudo(uint256)": {
+          "details": "Return pseudo of quest owner",
+          "params": {
+            "_questId": ": id of Quest"
+          }
+        },
+        "getQuestTitle(uint256)": {
+          "details": "return title of Quest",
+          "params": {
+            "_questId": ": id of quest"
+          }
+        },
+        "getWinningContribution(uint256)": {
+          "details": "Get present contribution having the more votes       in case of equality, first contribution is winning",
+          "params": {
+            "_questId": "quest id we would get winning contribution"
+          }
+        },
+        "hasContribute(uint256,address)": {
+          "details": "Test existence of sender's past contribution",
+          "params": {
+            "_questId": "ID of Quest to test"
+          },
+          "returns": {
+            "_0": "true if contribution from sender for quest found"
+          }
+        },
+        "readContribution(uint256)": {
+          "details": "Return Contribution data",
+          "params": {
+            "_contributionId": ": id of contribution"
+          }
+        },
+        "readUser(address)": {
+          "details": "Return user's stored data from _address",
+          "params": {
+            "_userAddress": ": address to find from active users"
+          }
+        },
+        "setPseudo(string)": {
+          "details": "User can choose a pseudo to display on Platform   => if newUser : get NewUserInitialBalance",
+          "params": {
+            "_newPseudo": ": User pseudo"
+          }
+        },
+        "withdrawReward(uint256)": {
+          "details": "As quest being closed, when Vote time deadline is reached,           contract will pay reward to owner of winning contribution",
+          "params": {
+            "_questId": "Quest being ended waiting reward payment"
+          }
+        }
+      },
+      "stateVariables": {
+        "maxTokenSupply": {
+          "details": "For the moment, QuestToken is just inner contract value   with maximum mintable amount and transferrable balances   => Initial Distribution can only be maked once per Wallet address       when address records pseudo"
+        }
+      },
+      "version": 1
+    },
+    "userdoc": {
+      "kind": "user",
+      "methods": {},
+      "version": 1
+    }
+  },
+  "settings": {
+    "compilationTarget": {
+      "contracts/Celoquest.sol": "Celoquest"
+    },
+    "evmVersion": "london",
+    "libraries": {},
+    "metadata": {
+      "bytecodeHash": "ipfs"
+    },
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "remappings": []
+  },
+  "sources": {
+    "contracts/Celoquest.sol": {
+      "keccak256": "0x78c05a9929699684b8c19d5743ad61e288b9a16cf8c8a5ba78861fc0ceb181f2",
+      "license": "MIT",
+      "urls": [
+        "bzz-raw://cd19c62c8a3c0cf912e7af808f3195911060abc30443163202664b7144914453",
+        "dweb:/ipfs/QmPqxxnupPeGTD5JFmEbEyyNqVGJsbKfPgpXw6MHP7kj2z"
+      ]
+    }
+  },
+  "version": 1
+}
