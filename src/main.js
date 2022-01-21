@@ -5,7 +5,7 @@ import CeloquestAbi from '../contract/Celoquest.abi.json'
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0xC86625dFbA7277Bb3CB4d8c507E939953FA70D89"
+const celoquestContractAddress = "0xC46eD808Cd90a49f148b523b7eF51fB3ACFC0730"
 let nbQuests = 0
 let kit
 let contract
@@ -60,7 +60,7 @@ const getUser = async function() {
 async function getPseudo(_address) {
     let pseudo = await contract.methods.getPseudo(_address).call()
     if (pseudo.trim === "") {
-        pseudo = "Unknown user"
+        pseudo = "Click to create account"
     }
     return pseudo
 }
@@ -126,8 +126,10 @@ const getAllQuests  = async function() {
         notification("Loading " + _questsLength + " stored quets")
         let _quests = []
         for (let i = 0 ; i < _questsLength ; i++) {
+            let _tile   = await contract.methods.getQuestTitle(i).call()
             let _pseudo = await contract.methods.getQuestOwnerPseudo(i).call()
-            let p = await contract.methods.getActiveQuest(i).call()
+            let _canContrib = await contract.methods.isContributable(i, kit.defaultAccount)
+            let p = await contract.methods.readQuest(i).call()
             let _quest = {
                 id:                 i,
                 owner:              p[0],
@@ -137,6 +139,7 @@ const getAllQuests  = async function() {
                 cUsdReward:         p[3],
                 cqtReward:          p[4],
                 nbContributions:    p[5],
+                contributable:      _canContrib
             }
             _quests.push(_quest)
         }
@@ -149,13 +152,17 @@ const getAllQuests  = async function() {
     }
 }
 
+function canContrib(_questId) {
+    return quests[_questId].contributable
+}
+
         //Template to display Quest on Dasboard list
 function questTemplate(_quest) {
-    return `
+    let rep = `
     <div class="card mb-4">
       <div class="card-body text-left p-4 position-relative">
         <div class="translate-middle-y position-absolute top-0">
-        ${identiconTemplate(_quest.owner)}
+            ${identiconTemplate(_quest.owner)}
         </div>
         <h2 class="card-title fs-4 fw-bold mt-2">${_quest.title}</h2>
         <br>
@@ -163,21 +170,34 @@ function questTemplate(_quest) {
         <p class="card-text mb-4" style="min-height: 82px">
           ${_quest.content}             
         </p>
-       <div class="d-grid gap-2">
-        <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
-        </div>
-        
-        <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" 
-           data-bs-toggle="modal"
-           data-bs-target="#newContribModal"
-           onclick="setQuestIdOnContribModal(${_quest.id});"
-           > <div id="questId" style="display: none"> ${_quest.id} </div>
-            Contribute to get ${_quest.cUsdReward} cUSD
-                and  ${_quest.cqtReward} CQT
-        </a>
-       </div>
-      </div>
-    </div>`
+        <div class="d-grid gap-2">
+            <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
+            </div> `
+
+    if (canContrib(_quest.id)) {
+        rep +=
+            ` <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" 
+               data-bs-toggle="modal"
+               data-bs-target="#newContribModal"
+               onclick="setQuestIdOnContribModal(${_quest.id});"
+              > <div id="questId" style="display: none"> ${_quest.id} </div>
+                Contribute to get ${_quest.cUsdReward} cUSD
+                    and  ${_quest.cqtReward} CQT
+              </a>`
+    }
+    else {
+        rep += `<a class="btn btn-lg btn-outline-dark seeContribBtn fs-6 p-3"
+                    onclick="setQuestIdOnContribModal(${quest.id});"
+                > <div id="questId" style="display: none"> ${_quest.id} </div>
+                    See all contributions - Reward = $(_quest.cUsdReward} cUSD
+                        and ${_quest.cqtReward} CQT
+                </a>`
+    }
+    rep +=
+      `</div>
+     </div>
+   </div>`
+   return rep
 }
 
 async function storeQuest(_newQuest) {

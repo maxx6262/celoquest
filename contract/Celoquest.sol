@@ -242,7 +242,8 @@ contract Celoquest {
         address                             owner;
         string                              title;
         string                              content;
-        uint                                deadLine;
+        bool                                isActive;
+        //      uint                                deadLine;
         uint                                cUsdReward;
         uint                                tokenReward;
         uint                                nbContributions;
@@ -255,7 +256,7 @@ contract Celoquest {
     mapping(uint => Quest) quests;
     mapping(uint => bool)  questRewardPaid;
 
-    event NewQuest(address owner, string title, uint cUsdReward, uint questTokenReward, uint deadline);
+    event NewQuest(address owner, string title, uint cUsdReward, uint questTokenReward);
     event NewVote(uint questId, uint contributionId, address userAddress);
     event NewRewardPayment(address payable winnerAddress, uint questId, uint questTokenAmount, uint cUsdAmount);
 
@@ -296,45 +297,49 @@ contract Celoquest {
         require(_contribInternalId < quests[_questId].nbContributions, "Contribution not found");
         return quests[_questId].contributions[_contribInternalId];
     }
-
+    //=> Deleting nbActiveDays : quest owner decide when ending quest
     /** * @param _content is Quest explanation/description
         * @param _cUsdReward  is cUsd reward amount Quest's owner will pay to winner
         * @param _questTokenReward is QuestToken reward amount Quest's owner will pay to winner
-        * @param _nbActiveDays is nbDays before contribution's time end
         * @dev   owner create Quest with Rewards = _cUsdAmount of cUsd token and _questTokenAmount of questToken
         *           - Users can contribute until deadline
         *           - Users can vote until deadline + 1 day
     */
-    function createQuest(string memory _title, string memory _content, uint _cUsdReward, uint _questTokenReward, uint _nbActiveDays)
+    function createQuest(string memory _title, string memory _content, uint _cUsdReward, uint _questTokenReward)
     external {
         require(bytes(_content).length > 0, "Quest content can't be empty");
         require(_cUsdReward + _questTokenReward > 0, "Quest must have reward amount");
         require(tokenBalance[msg.sender] >= _questTokenReward, "QuestToken balance too low");
-        require(IERC20Token(cUsdTokenAddress).transferFrom(msg.sender, payable(address(this)), _cUsdReward), "Error during cUsd transaction");
-        _transferQuestTokenFrom(msg.sender, address(this), _questTokenReward);
+        if (_cUsdReward > 0) {
+            require(IERC20Token(cUsdTokenAddress).transferFrom(msg.sender, payable(address(this)), _cUsdReward), "Error during cUsd transaction");
+        }
+        if (_questTokenReward > 0) {
+            _transferQuestTokenFrom(msg.sender, address(this), _questTokenReward);
+        }
         Quest storage _newQuest     =   quests[nbQuests];
         _newQuest.title             =   _title;
         _newQuest.owner             =   msg.sender;
         _newQuest.content           =   _content;
         _newQuest.cUsdReward        =   _cUsdReward;
         _newQuest.tokenReward       =   _questTokenReward;
-        _newQuest.deadLine          =   block.timestamp + (_nbActiveDays * 1 days);
+        _newQuest.isActive          =   true;
         _newQuest.nbVotes           =   0;
         _newQuest.nbContributions   =   0;
         userQuestsCount[msg.sender]++;
-        emit NewQuest(msg.sender, _content, _cUsdReward, _questTokenReward, _newQuest.deadLine);
+        emit NewQuest(msg.sender, _content, _cUsdReward, _questTokenReward);
         nbQuests++;
     }
 
 
     //Get all Quest data
-    function getActiveQuest(uint _questId) public view isActive(_questId) returns (
+    function readQuest(uint _questId) public view returns (
         address,            //Quest's owner
         string memory,      //Quest's title
         string memory,      //Quest content
         uint,               //cUsd Reward amount
         uint,               //questToken Reward amount
-        uint                //Quest Contributions Count
+        uint,               //Quest Contributions Count
+        bool                //Quest is active
     ) {
         return (
         quests[_questId].owner,
@@ -342,37 +347,35 @@ contract Celoquest {
         quests[_questId].content,
         quests[_questId].cUsdReward,
         quests[_questId].tokenReward,
-        quests[_questId].nbContributions
-        );
-    }
-
-    //get any Quest
-    function getQuest(uint _questId) public view returns(
-        address,        //owner
-        string memory,  //title
-        string memory,  //content
-        uint,           //nbContribs
-        bool           //isActive
-    )  {
-        require(_questId < nbQuests, "Quest not found");
-        return(
-        quests[_questId].owner,
-        quests[_questId].title,
-        quests[_questId].content,
         quests[_questId].nbContributions,
-        quests[_questId].deadLine > block.timestamp
+        quests[_questId].isActive
         );
     }
 
-    function isActiveQuest(uint _questId) public view returns(bool) {
-        return (quests[_questId].deadLine + (1 days) > block.timestamp);
-    }
-
+    /**     Deleting deadline process
+        function isActiveQuest(uint _questId) public view returns(bool) {
+            return (quests[_questId].deadLine + (1 days) > block.timestamp);
+        }
+    */
+    //Modifier isActive => only active quest we can still contribute
     modifier isActive(uint _questId) {
         require(_questId < nbQuests, "Quest not found");
-        require(quests[_questId].deadLine + (1 days) >= block.timestamp);
+        require(quests[_questId].isActive, "Quest not active");
         _;
     }
+
+
+    //****************************************************************************************************/
+    //test past Contribution existence
+    /** * @param _questId ID of Quest to test
+        * @return true if contribution from sender for quest found
+        * @dev Test existence of sender's past contribution
+    */
+    function hasContribute(uint _questId, address _sender) public view onlyUser(_sender) returns(bool) {
+        require(_questId < nbQuests, "Quest not found");
+        return(quests[_questId].userContribution[msg.sender] > 0 );
+    }
+
     //****************************************************************************************************/
     //Post contribution
     /** * @param _questId  ID of Quest user would contribute
@@ -380,8 +383,8 @@ contract Celoquest {
         * @dev Only one contribution per address until deadline is reached
     */
     function createContribution(uint _questId, string memory _title, string memory _content)
-    external onlyUser(msg.sender) {
-        require(!(quests[_questId].userContribution[msg.sender] > 0 ), "User already contribute to Quest");
+    external onlyUser(msg.sender) isActive(_questId) {
+        require(!(hasContribute(_questId, msg.sender)), "User already contribute to Quest");
         contributions[nbContributions] = Contribution(
             _questId,
             payable(msg.sender),
@@ -395,10 +398,9 @@ contract Celoquest {
         nbContributions++;
     }
 
-    function newVote(uint _contributionId) external onlyUser(msg.sender) {
+    function newVote(uint _contributionId) external onlyUser(msg.sender) isActive(contributions[_contributionId].questId)
+    {
         require(_contributionId < nbContributions, "Contribution not found");
-        require(quests[contributions[_contributionId].questId].deadLine < block.timestamp + 1 days,
-            "Vote time ended for this Quest");
         require(!(contributions[_contributionId].owner == msg.sender),
             "User can't vote his owned contributions");
         uint _questId = contributions[_contributionId].questId;
@@ -436,8 +438,11 @@ contract Celoquest {
         *           contract will pay reward to owner of winning contribution
     */
     function withdrawReward(uint _questId) external onlyUser(msg.sender) {
-        require(quests[_questId].deadLine + (1 days) <= block.timestamp,
-            "Quest vote time is not still ended");
+
+        /** Deleting deadline process
+                require(quests[_questId].deadLine + (1 days) <= block.timestamp,
+                    "Quest vote time is not still ended");
+        */
         uint _winningContributionId = getWinningContribution(_questId);
         _transferQuestTokenTo(contributions[_winningContributionId].owner,
             quests[_questId].tokenReward);
