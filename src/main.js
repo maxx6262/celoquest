@@ -109,7 +109,7 @@ const getBalance = async function() {
 
 //*******************************************************************************************
     //Quests management
-/**
+/*
         //Setting current focused Quest ID
 const setQuestIdOnContribModal = function (_questId) {
     console.log(_questId)
@@ -126,9 +126,7 @@ const getAllQuests  = async function() {
         notification("Loading " + _questsLength + " stored quets")
         let _quests = []
         for (let i = 0 ; i < _questsLength ; i++) {
-            let _tile   = await contract.methods.getQuestTitle(i).call()
             let _pseudo = await contract.methods.getQuestOwnerPseudo(i).call()
-            let _canContrib = await contract.methods.isContributable(i, kit.defaultAccount)
             let p = await contract.methods.readQuest(i).call()
             let _quest = {
                 id:                 i,
@@ -139,7 +137,7 @@ const getAllQuests  = async function() {
                 cUsdReward:         p[3],
                 cqtReward:          p[4],
                 nbContributions:    p[5],
-                contributable:      _canContrib
+                isActive:           p[6],
             }
             _quests.push(_quest)
         }
@@ -152,12 +150,8 @@ const getAllQuests  = async function() {
     }
 }
 
-function canContrib(_questId) {
-    return quests[_questId].contributable
-}
-
         //Template to display Quest on Dasboard list
-function questTemplate(_quest) {
+async function questTemplate(_quest) {
     let rep = `
     <div class="card mb-4">
       <div class="card-body text-left p-4 position-relative">
@@ -173,25 +167,28 @@ function questTemplate(_quest) {
         <div class="d-grid gap-2">
             <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
             </div> `
-
-    if (canContrib(_quest.id)) {
+    let _hasContribute = await contract.methods.hasContribute(_quest.id, kit.defaultAccount).call()
+    if (_quest.isActive && !(_hasContribute)) {
         rep +=
             ` <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" 
-               data-bs-toggle="modal"
-               data-bs-target="#newContribModal"
-               onclick="setQuestIdOnContribModal(${_quest.id});"
-              > <div id="questId" style="display: none"> ${_quest.id} </div>
-                Contribute to get ${_quest.cUsdReward} cUSD
-                    and  ${_quest.cqtReward} CQT
-              </a>`
+                data-bs-toggle="modal"
+                data-bs-target="#newContribModal"
+                onclick="setQuestIdOnContribModal(${_quest.id});"
+                > 
+                    <div id="questId" style="display: none"> ${_quest.id} </div>
+                        Contribute to get ${_quest.cUsdReward} cUSD
+                        and  ${_quest.cqtReward} CQT
+                </a>`
     }
     else {
         rep += `<a class="btn btn-lg btn-outline-dark seeContribBtn fs-6 p-3"
                     onclick="setQuestIdOnContribModal(${quest.id});"
                 > <div id="questId" style="display: none"> ${_quest.id} </div>
-                    See all contributions - Reward = $(_quest.cUsdReward} cUSD
-                        and ${_quest.cqtReward} CQT
-                </a>`
+                    See all contributions </a> 
+                <p>
+                    Reward = <strong> ${_quest.cUsdReward} cUSD </strong>
+                        and  <strong> ${_quest.cqtReward} CQT </strong>
+                </p>`
     }
     rep +=
       `</div>
@@ -207,37 +204,12 @@ async function storeQuest(_newQuest) {
             _newQuest.title,
             _newQuest.content,
             _newQuest.cUsdReward,
-            _newQuest.cqtReward,
-            _newQuest.nbActiveDays
+            _newQuest.cqtReward
         ).send({from: _newQuest.owner})
-        notificationOff()
-        lo
+        notification("New Quest stored on chain")
+        await getBalance()
     } catch (error) {
         notification(error)
-    }
-}
-
-
-async function addQuest(_title, _content, _cUsdReward, _cqtReward, _nbActiveDays) {
-    try {
-        const _newQuest = {
-            id:             quests.length,
-            owner:          kit.defaultAccount,
-            title:          _title,
-            content:        _content,
-            cUsdReward:     _cUsdReward,
-            cqtReward:      _cqtReward,
-            nbActiveDays:   _nbActiveDays
-        }
-        const result = await contract.methods
-            .createQuest(_title, _content, _cUsdReward, _cqtReward, _nbActiveDays)
-            .send({from: kit.defaultAccount})
-        notification(`🎉 You successfully added "${_newQuest.title}".`)
-        quests.push(_newQuest)
-        getBalance()
-        await renderQuestsList()
-    } catch (error) {
-        notification(`⚠️ ${error}.`)
     }
 }
 
@@ -256,21 +228,6 @@ const voteContrib = async function (_contribId) {
     }
 }
 
-
-        //Get contrib by Id
-async function getContrib(_contribId) {
-    const result    = await contract.methods.readContribution(_contribId).call()
-    let _pseudo     = await getPseudo(result[1])
-    const contrib   = {
-        id:         _contribId,
-        owner:      result[1],
-        pseudo:     _pseudo,
-        title:      result[2],
-        content:    result[3],
-        nbVotes:    result[4],
-    }
-    return contrib
-}
 
 function contribTemplate(_contrib) {
     return `<div class="card mb4 contrib contribCard">
@@ -300,38 +257,6 @@ function contribTemplate(_contrib) {
         `
 }
 
-const loadContribs = async function (_questId) {
-    const resultQuest = await contract.methods.getQuest(_questId).call()
-    const QuestPseudo = getPseudo(resultQuest[0])
-    const Quest = {
-        id:             _questId,
-        owner:          resultQuest[0],
-        pseudo:         QuestPseudo,
-        title:          resultQuest[1],
-        content:        resultQuest[2],
-        nbContribs:     resultQuest[3],
-        isActive:       resultQuest[4],
-    }
-    quests = [Quest]
-    let _contribs = []
-    for (let i = 0 ; i < Quest.nbContribs ; i++) {
-        let _contrib  =   new Promise( async (resolve, reject)  => {
-            let _contribId = await contract.methods.getContribId(_questId, i)
-            let p          = await contract.methods.readContribution(_contribId)
-            resolve({
-                contribId: p[0],
-                questId: _questId,
-                owner: p[1],
-                pseudo: getPseudo(p[1]),
-                content: p[2],
-                nbVotes: p[3],
-            })
-        })
-        _contribs.push(_contrib)
-    }
-    contributions = await Promise.all(_contribs)
-}
-
 const questHeaderTemplate = function (_questId) {
     try {
         if  (focusedQuestId != _questId) {
@@ -346,7 +271,9 @@ const questHeaderTemplate = function (_questId) {
                 <div class="translate-middle-y position-absolute top-0">
                     ${identiconTemplate(quest.owner)}
                 </div>
+                <a class="btn btn-lg btn-outline-dark questListBtn">
                 <h2> ${quest.title} </h2>
+                </a>
                 <h3> ${quest.content} </h3>
             </div>
             <br>
@@ -451,24 +378,10 @@ async function renderQuestsList() {
     for (const _quest of quests) {
         const newDiv = document.createElement("div")
         newDiv.className = "col-md-4"
-        newDiv.innerHTML = questTemplate(_quest)
+        newDiv.innerHTML =  await questTemplate(_quest)
         document.getElementById('celoquest').appendChild(newDiv)
     }
 }
-
-
-        //Adding contribution at Quest
-const addContribution = async function (_questId, _title, _content) {
-    try {
-        notification("Adding contribution")
-        await contract.methods.createContribution(_questId, _title, _content)
-            .send({ from: kit.defaultAccount })
-            .then(notificationOff())
-    } catch (error) {
-        notification(error)
-    }
-}
-
 
 //***********************************************************************************************
 
@@ -502,13 +415,12 @@ document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
             title:          document.getElementById('newQuestTitle').value,
             content:        document.getElementById('newQuestContent').value,
             cUsdReward:     document.getElementById('newcUSDReward').value,
-            cqtReward:      document.getElementById('newCQTReward').value,
-            nbActiveDays:   7,
+            cqtReward:      document.getElementById('newCQTReward').value
             }
-            storeQuest(_newQuest)
+            await storeQuest(_newQuest)
             notification("Quest recorded on Chain !")
             await getAllQuests()
-            renderQuestsList()
+            await renderQuestsList()
             notificationOff()
         } catch (error) {
             console.log(error)
@@ -545,10 +457,24 @@ document
                     .setPseudo(_newPseudo)
                     .send({from: kit.defaultAccount})
                     user = _newPseudo;
-                    notification(`🎉You succesfully set pseudo "${user.pseudo}" for address ${kit.defaultAccount}.`)
+                    notification(`🎉You succesfully set pseudo "${user}" for address ${kit.defaultAccount}.`)
+                    getBalance()
 
             } catch (error) {
                 notification(`⚠️ ${error}.`)
             }
-            getUser()
+            await getUser()
+            await getBalance()
     })
+
+            //Add return to Quest List event
+document.querySelector('#questListBtn').addEventListener('click', async (e) => {
+    document.getElementById('celoquest').innerHTML = ""
+    try {
+        notification("Return to Quest List")
+        await renderQuestsList()
+        notificationOff()
+    } catch (error) {
+        notification(error)
+    }
+})
