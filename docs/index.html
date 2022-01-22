@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+        let quests = []
+        let quest = {}
+        let contributions = []
+        let contribId
+
+        const setQuestIdOnContribModal = function (_questId) {
+            console.log(_questId)
+            document.querySelector('#newContribModal').querySelector("#questId").innerHTML = _questId
+            focusedQuestId = _questId
+            quest = quests[_questId]
+        }
+
+        const voteContrib = async function (_contribId) {
+            try {
+                notification("Adding new Vote")
+                await contract.methods.newVote(_contribId)
+                    .send({ from: kit.defaultAccount})
+                    .then(notificationOff())
+            } catch(error) {
+                notification(error)
+            }
+        }
+    </script>
+    <!-- CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
+      crossorigin="anonymous"
+    />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css"
+    />
+
+    <style>
+      :root {
+        --bs-font-sans-serif: "DM Sans", sans-serif;
+      }
+
+      @media (min-width: 750px) {
+        .card {
+          border: 0;
+          box-shadow: rgb(0 0 0 / 5%) 0px 10px 20px;
+          border-radius: 10px;
+        }
+
+        .card-img-top {
+          width: 100%;
+          height: 20vw;
+          object-fit: cover;
+        }
+
+        .col-md-4 {
+          border: solid 1px gray;
+          border-radius: 10px;
+        }
+      }
+    </style>
+
+    <title> Celobook - Blockchain based Social Media </title>
+  </head>
+
+  <body>
+    <div class="container mt-2" style="max-width: 72em">
+
+      <nav class="navbar bg-white navbar-light">
+        <div class="container-fluid">
+          <span class="navbar-brand m-0 h4 fw-bold"> CeloQuest - Blockchained Social Media </span>
+          <span class="nav-link border rounded-pill bg-light">
+            <span id=cUsdBalance>0 </span>
+            cUsd
+          </span>
+          <span class="nav-link border rounded-pill bg-light">
+            <span id="CqtBalance">0</span>
+            CQT
+          </span>
+          <span class="nav-link border rounded-pill bg-light">
+            <span id="UserBlock"> Undefined </span>
+
+          </span>
+        </div>
+      </nav>
+
+      <div class="alert alert-warning sticky-top mt-2" role="alert">
+        <span id="notification">⌛ Loading...</span>
+      </div>
+
+      <div class="mb-4" style="margin: 4em">
+        <p>
+        <a
+          class="btn btn-dark rounded-pill"
+          data-bs-toggle="modal"
+          data-bs-target="#addModal"
+        >
+          Create a new Quest
+        </a>
+        </p>
+      </div>
+
+      <main id="celoquest" class="row"></main>
+    </div>
+
+<!--Modal-->
+    <div
+      class="modal fade"
+      id="addModal"
+      tabindex="-1"
+      aria-labelledby="newQuestModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <form>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="newQuestModalLabel">New Quest</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+              <div class="form-row">
+                <div class="col">
+                  <input
+                    type="text"
+                    id="newQuestTitle"
+                    class="form-control mb-2"
+                    placeholder="Enter Quest Title"
+                  />
+                </div>
+                <div class="col">
+                  <input
+                    type="text"
+                    id="newQuestContent"
+                    class="form-control mb-2"
+                    placeholder="Enter Quest content"
+                  />
+                </div>
+                <div class="col">
+                  <input
+                    type="int"
+                    id="newcUSDReward"
+                    class="form-control mb-2"
+                    placeholder="Enter cUsd Quest Reward"
+                  />
+                </div>
+                <div class="col">
+                  <input
+                    type="int"
+                    id="newCQTReward"
+                    class="form-control mb-2"
+                    placeholder="Enter CQT Quest Reward"
+                  />
+                </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-light border"
+              data-bs-dismiss="modal"
+            >
+                Close
+            </button>
+            <button
+              type="button"
+              class="btn btn-dark"
+              data-bs-dismiss="modal"
+              id="newQuestBtn"
+            >
+                Add Quest
+            </button>
+          </div>
+        </div>
+        </form>
+      </div>
+    </div>
+<!--/Modal-->
+<!------------------------------------------------------------------------------->
+<!--userModal-->
+    <div
+      class="modal fade"
+      id="pseudoModal"
+      tabindex="-1"
+      aria-labelledby="newPseudoModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="newPseudoModalLabel">New Pseudo</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-row">
+                <div class="col">
+                  <input
+                    type="text"
+                    id="newPseudo"
+                    class="form-control mb-2"
+                    placeholder="Enter your new pseudo"
+                  />
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-light border"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              class="btn btn-dark"
+              data-bs-dismiss="modal"
+              id="newPseudoBtn"
+            >
+              Store Pseudo
+            </button>
+            <p>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+<!--/userModal-->
+<!--contributionModal-->
+<div
+      class="modal fade"
+      id="newContribModal"
+      tabindex="-1"
+      aria-labelledby="newContribModalLabel"
+      aria-hidden="true"
+    >
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newContribModalLabel">New Contribution</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-row">
+            <div class="col">
+              <div id="questId" hidden> </div>
+              <input
+                type="text"
+                id="newContributionTitle"
+                class="form-control mb-2"
+                placeholder="Enter Contribution Title"
+              />
+            </div>
+            <div class="col">
+              <input
+                type="text"
+                id="newContributionContent"
+                class="form-control mb-2"
+                placeholder="Enter Contribution content"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+            <button
+                type="button"
+                class="btn btn-light border"
+                data-bs-dismiss="modal"
+            >
+                Close
+            </button>
+            <button
+              type="button"
+              class="btn btn-dark"
+              data-bs-dismiss="modal"
+              id="newContribBtn"
+            >
+                Add Contribution
+            </button>
+        </div>
+      </div>
+  </form>
+  </div>
+</div>
+<!--/contributionModal-->
+    <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+    crossorigin="anonymous"
+    ></script>
+    <script src="https://unpkg.com/ethereum-blockies@0.1.1/blockies.min.js"></script>
+    <script src="../src/main.js"></script>
+  <script type="text/javascript" src="main.js"></script></body>
+</html>
