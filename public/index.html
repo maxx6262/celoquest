@@ -6,27 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script>
         let quests = []
+        let questId
         let quest = {}
         let contributions = []
         let contribId
+        let focusedQuestId
 
         const setQuestIdOnContribModal = function (_questId) {
-            console.log(_questId)
             document.querySelector('#newContribModal').querySelector("#questId").innerHTML = _questId
             focusedQuestId = _questId
             quest = quests[_questId]
+            questId = _questId
         }
 
-        const voteContrib = async function (_contribId) {
-            try {
-                notification("Adding new Vote")
-                await contract.methods.newVote(_contribId)
-                    .send({ from: kit.defaultAccount})
-                    .then(notificationOff())
-            } catch(error) {
-                notification(error)
-            }
-        }
     </script>
     <!-- CSS -->
     <link

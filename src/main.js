@@ -146,54 +146,57 @@ const getAllQuests  = async function() {
         await renderQuestsList()
         notificationOff()
     } catch (error) {
-    notification(error)
+        notification(`⚠️ ${error}.`)
     }
 }
 
         //Template to display Quest on Dasboard list
 async function questTemplate(_quest) {
-    let rep = `
-    <div class="card mb-4">
-      <div class="card-body text-left p-4 position-relative">
-        <div class="translate-middle-y position-absolute top-0">
-            ${identiconTemplate(_quest.owner)}
-        </div>
-        <h2 class="card-title fs-4 fw-bold mt-2">${_quest.title}</h2>
-        <br>
-        <h3 class="card-tile fs-4 fw-bold mt-1">${_quest.pseudo}</h3>
-        <p class="card-text mb-4" style="min-height: 82px">
-          ${_quest.content}             
-        </p>
-        <div class="d-grid gap-2">
-            <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
-            </div> `
+    let rep =
+        `<div class="card mb-4">
+            <div class="card-body text-left p-4 position-relative">
+                <div class="translate-middle-y position-absolute top-0">
+                    ${identiconTemplate(_quest.owner)}
+                </div>
+                <h2 class="card-title fs-4 fw-bold mt-2">${_quest.title}</h2>
+                <br>
+                <h3 class="card-tile fs-4 fw-bold mt-1">${_quest.pseudo}</h3>
+                <p class="card-text mb-4" style="min-height: 82px">
+                    ${_quest.content}             
+                </p>
+                <div class="d-grid gap-2">
+                    <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
+                    </div> `
     let _hasContribute = await contract.methods.hasContribute(_quest.id, kit.defaultAccount).call()
     if (_quest.isActive && !(_hasContribute)) {
         rep +=
-            ` <a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" 
-                data-bs-toggle="modal"
-                data-bs-target="#newContribModal"
-                onclick="setQuestIdOnContribModal(${_quest.id});"
-                > 
-                    <div id="questId" style="display: none"> ${_quest.id} </div>
-                        Contribute to get ${_quest.cUsdReward} cUSD
-                        and  ${_quest.cqtReward} CQT
-                </a>`
+                   `<a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" 
+                       data-bs-toggle="modal"
+                       data-bs-target="#newContribModal"
+                       onclick="setQuestIdOnContribModal(${_quest.id});"
+                    > 
+                        <div id="questId" style="display: none"> ${_quest.id} </div>
+                            Contribute to get ${_quest.cUsdReward} cUSD
+                            and ${_quest.cqtReward} CQT
+                    </a>`
     }
     else {
-        rep += `<a class="btn btn-lg btn-outline-dark seeContribBtn fs-6 p-3"
-                    onclick="setQuestIdOnContribModal(${quest.id});"
-                > <div id="questId" style="display: none"> ${_quest.id} </div>
-                    See all contributions </a> 
-                <p>
-                    Reward = <strong> ${_quest.cUsdReward} cUSD </strong>
+        rep +=
+                   `<button class="btn btn-lg btn-outline-dark fs-6 p-3 seeContribBtn"
+                            onclick="setQuestIdOnContribModal(${quest.id});"
+                    > 
+                        <div id="questId" style="display: none"> ${_quest.id} </div>
+                        See all contributions 
+                    </button> 
+                    <p>
+                        Reward = <strong> ${_quest.cUsdReward} cUSD </strong>
                         and  <strong> ${_quest.cqtReward} CQT </strong>
-                </p>`
+                    </p>`
     }
     rep +=
-      `</div>
-     </div>
-   </div>`
+                `</div>
+             </div>
+         </div>`
    return rep
 }
 
@@ -209,7 +212,7 @@ async function storeQuest(_newQuest) {
         notification("New Quest stored on chain")
         await getBalance()
     } catch (error) {
-        notification(error)
+        notification(`⚠️ ${error}.`)
     }
 }
 
@@ -217,44 +220,42 @@ async function storeQuest(_newQuest) {
         //Contributions management
 
         //Vote on contrib
-const voteContrib = async function (_contribId) {
+async function voteContrib (_contribId) {
     try {
         notification("Adding new Vote on Chain")
         const result = await contract.methods.newVote(_contribId)
             .send({from: kit.defaultAccount})
             .then(notificationOff)
     } catch (error) {
-        notification(error)
+        notification(`⚠️ ${error}.`)
     }
 }
 
 
 function contribTemplate(_contrib) {
     return `<div class="card mb4 contrib contribCard">
-            <div class="card-body text-left p-4 position-relative">
-                <div class="translate-middle-y position-absolute top-0">
-                    ${identiconTemplate(_contrib.owner)}    
-                </div>
-                <h2 class="card-title fs-4 fw-bold mt-2"> ${_contrib.pseudo} </h2>
-                <div id="contribId"> ${_contrib.id}</div>
-                <p class="card-text mb-4" style="min-height: 82px">
-                    ${_contrib.content}             
-                </p>    
-                <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
-                </div>
-                <button class=btn btn-dark voteBtn"
-                        onclick='voteContrib(${_contrib.id}='
-                > 
-                    Vote 
-                </button>
+                <div class="card-body text-left p-4 position-relative">
+                    <div class="translate-middle-y position-absolute top-0">
+                        ${identiconTemplate(_contrib.owner)}    
+                    </div>
+                    <h2 class="card-title fs-4 fw-bold mt-2"> ${_contrib.pseudo} </h2>
+                    <div id="contribId"> ${_contrib.id}</div>
+                    <p class="card-text mb-4" style="min-height: 82px">
+                        ${_contrib.content}             
+                    </p>    
+                    <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
+                    </div>
+                    <button class=btn btn-dark voteBtn"
+                           onclick='voteContrib(${_contrib.id})'
+                    > 
+                        Vote 
+                    </button>
                                 
-                <div class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3"
+                    <div class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3"
                         ${_contrib.nbVotes} votes
+                    </div>
                 </div>
-                </div>
-            </div>
-            </div>
-        `
+            </div>`
 }
 
 const questHeaderTemplate = function (_questId) {
@@ -264,23 +265,31 @@ const questHeaderTemplate = function (_questId) {
             loadQuest(_questId)
             notificationOff()
         }
-        return (`<div class="class="container my-12"> 
+        return (
+            `<div class="class="container my-8"> 
                 <br>
-            <h1> Contribution's list </h1>
-             <div class="header" id="questHeader">
-                <div class="translate-middle-y position-absolute top-0">
-                    ${identiconTemplate(quest.owner)}
+                <h1> Contribution's list </h1>
+                <button class="btn btn-dark"
+                        id="questListBtn"
+                >
+                    Back to Quests listing
+                </button>
+            
+                <div class="questHeader" id="questHeader">
+                    <div class="translate-middle-y position-absolute top-0">
+                        ${identiconTemplate(quest.owner)}
+                    </div>
+                    <h2> ${quest.title} </h2>
+                    <h3> ${quest.content} </h3>
+                    <p>
+                        List of ${quest.nbContributions} 
+                    </p>
                 </div>
-                <a class="btn btn-lg btn-outline-dark questListBtn">
-                <h2> ${quest.title} </h2>
-                </a>
-                <h3> ${quest.content} </h3>
-            </div>
-            <br>
-        </div>`)
+                <br>
+            </div>`)
         } catch (error) {
-            notification(error)
-    }
+            notification(`⚠️ ${error}.`)
+        }
 }
 
         //Rending all contributions from QuestId
@@ -305,8 +314,8 @@ async function renderContributionsList(questId) {
         for (let j = 0; j < nbContribQuest; j++) {
             try {
                 let _contributionId = await contract.methods.getContribId(questId, j).call()
-                const _contribRep = await contract.methods.readContribution(_contributionId).call()
-                let _contribPseudo = await getPseudo(_contribRep[1])
+                const _contribRep   = await contract.methods.readContribution(_contributionId).call()
+                let _contribPseudo  = await getPseudo(_contribRep[1])
                 let _contrib = {
                     id: _contributionId,
                     owner: _contribRep[1],
@@ -321,54 +330,55 @@ async function renderContributionsList(questId) {
                 document.getElementById('celoquest').appendChild(newDiv)
                 notificationOff()
             } catch (error) {
-                notification(error)
+                notification(`⚠️ ${error}.`)
             }
         }
     } catch (error) {
-        notification(error)
+        notification(`⚠️ ${error}.`)
     }
 }
 
 //*******************************************************************************************************/
 const loadQuest = async function (_questId) {
     try {
-        const rep = await contract.methods.getQuest(_questId).call()
-        try {
-            let _quest = {
-                id:         _questId,
-                owner:      rep[0],
-                title:      rep[1],
-                content:    rep[2],
-                nbContribs: rep[3],
-                contribs:   [],
-                isActive:   rep[4],
-            }
-            if (_quest.isActive) {
-                for (let i = 0 ; i < _quest.nbContribs ; i++) {
-                    try {
-                        const _contribId = await contract.methods.getContribId(_questId, i).call()
-                        const contribRep = await contract.methods.readContribution(_contribId).call()
-                        let _contribOwner    =   contribRep[1]
-                        let _contrib = {
-                            id:             _contribId,
-                            owner:          _contribOwner,
-                            title:          contribRep[2],
-                            content:        contribRep[3],
-                            nbVotes:        contribRep[4],
-                        }
-                        _quest.contribs.push(_contrib)
-                        contributions.push(_contrib)
-                        quest = _quest
-                        notificationOff()
-                    } catch (error) {
-                        notification(`⚠️ ${error}.`)
+        let _questOwnerPseudo = await contract.methods.getQuestOwnerPseudo(_questId).call()
+        const rep = await contract.methods.readQuest(_questId).call()
+        let _quest = {
+            id:         _questId,
+            owner:      rep[0],
+            pseudo:     _questOwnerPseudo,
+            title:      rep[1],
+            content:    rep[2],
+            nbContribs: rep[5],
+            contribs:   [],
+            isActive:   rep[6],
+        }
+        if (_quest.isActive) {
+            contributions   =   []
+            for (let i = 0 ; i < _quest.nbContribs ; i++) {
+                try {
+                    const _contribId = await contract.methods.getContribId(_questId, i).call()
+                    const contribRep = await contract.methods.readContribution(_contribId).call()
+                    let _contribOwner    =   contribRep[1]
+                    let _contribPseudo   =   getPseudo(_contribOwner)
+                    let _contrib = {
+                        id:             _contribId,
+                        owner:          _contribOwner,
+                        pseudo:         _contribPseudo,
+                        title:          contribRep[2],
+                        content:        contribRep[3],
+                        nbVotes:        contribRep[4],
                     }
+                    _quest.contribs.push(_contrib)
+                    contributions.push(_contrib)
+                    quest = _quest
+                    notificationOff()
+                } catch (error) {
+                    notification(`⚠️ ${error}.`)
                 }
             }
-        } catch (error) {
-            notification(`⚠️ ${error}.`)
         }
-    }  catch (error) {
+    } catch (error) {
         notification(`⚠️ ${error}.`)
     }
 }
@@ -423,7 +433,7 @@ document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
             await renderQuestsList()
             notificationOff()
         } catch (error) {
-            console.log(error)
+            notification(`⚠️ ${error}.`)
         }
 })
 
@@ -444,11 +454,26 @@ document.querySelector("#newContribBtn").addEventListener("click", async (e) => 
         renderContributionsList(_newContrib.questId)
             notificationOff()
     } catch (error) {
-        notification(error)
+        notification(`⚠️ ${error}.`)
     }
 })
 
-        //Set Pseudo : when user click on pseudo on user block
+//See all contributions from Quest
+let contribsBtnList = document.getElementsByClassName("seeContribBtn")
+contribsBtnList.forEach(_contribBtn => {
+    _contribBtn.addEventListener('click', async (e) => {
+        try {
+            notification("Loading contributions");
+            renderContributionsList(questId)
+            notificationOff()
+        } catch (error) {
+            notification(`⚠️ ${error}.`)
+        }
+    })
+})
+
+
+//Set Pseudo : when user click on pseudo on user block
 document
     .querySelector("#newPseudoBtn").addEventListener("click", async (e) => {
             const _newPseudo = document.getElementById("newPseudo").value
@@ -458,23 +483,22 @@ document
                     .send({from: kit.defaultAccount})
                     user = _newPseudo;
                     notification(`🎉You succesfully set pseudo "${user}" for address ${kit.defaultAccount}.`)
-                    getBalance()
-
+                    await getUser()
+                    await getBalance()
             } catch (error) {
                 notification(`⚠️ ${error}.`)
             }
-            await getUser()
-            await getBalance()
-    })
+})
 
-            //Add return to Quest List event
+//Add return to Quest List event
 document.querySelector('#questListBtn').addEventListener('click', async (e) => {
-    document.getElementById('celoquest').innerHTML = ""
     try {
         notification("Return to Quest List")
+        document.getElementById('celoquest').innerHTML = ""
         await renderQuestsList()
         notificationOff()
     } catch (error) {
-        notification(error)
+        notification(`⚠️ ${error}.`)
     }
 })
+
