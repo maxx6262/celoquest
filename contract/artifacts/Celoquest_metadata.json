@@ -798,18 +798,18 @@
       "bytecodeHash": "ipfs"
     },
     "optimizer": {
-      "enabled": true,
+      "enabled": false,
       "runs": 200
     },
     "remappings": []
   },
   "sources": {
     "contracts/Celoquest.sol": {
-      "keccak256": "0x78c05a9929699684b8c19d5743ad61e288b9a16cf8c8a5ba78861fc0ceb181f2",
+      "keccak256": "0x510aff457197910b4c0debd8e336a500fd5429283c98c9ef7284ba414aea6379",
       "license": "MIT",
       "urls": [
-        "bzz-raw://cd19c62c8a3c0cf912e7af808f3195911060abc30443163202664b7144914453",
-        "dweb:/ipfs/QmPqxxnupPeGTD5JFmEbEyyNqVGJsbKfPgpXw6MHP7kj2z"
+        "bzz-raw://5477cde54989ead02af012aa68dd9c38306998cf7f2ee2a555148db2fb662069",
+        "dweb:/ipfs/QmdwVTqzKECeejArWy4VDGs95yhsJz82F52V4ixRzcL378"
       ]
     }
   },

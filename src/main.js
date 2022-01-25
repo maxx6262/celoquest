@@ -6,7 +6,7 @@ import BigNumber from "bignumber.js";
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0xC46eD808Cd90a49f148b523b7eF51fB3ACFC0730"
+const celoquestContractAddress = "0xbB8cAD00EAf597299c947eCD1a07af9a7Ff23e0B"
 var nbQuests
 var kit
 var contract
@@ -180,7 +180,6 @@ const getAllQuests  = async function() {
             quests.push(_quest)
         }
         console.log(quests)
-        await renderQuestsList()
         notificationOff()
     } catch (error) {
         notification(`⚠️ ${error}.`)
@@ -247,6 +246,7 @@ const storeQuest = async function (_newQuest) {
         ).send({from: _newQuest.owner})
         notification("New Quest stored on chain")
         await getBalance()
+        await renderQuestsList()
     } catch (error) {
         notification(`⚠️ ${error}.`)
     }
@@ -334,13 +334,20 @@ function contribTemplate(_contrib) {
 //Get all contributions async function
 const getAllContributions = async function (_questId) {
     _questId = parseInt(_questId)
-    if (questId != parseInt(_questId)) {
-        await setQuestId(parseInt(_questId))
+    if (parseInt(questId) != parseInt(_questId)) {
+        console.log('setQuestId to ' + _questId)
+        await setQuestId(_questId)
+        console.log('questId = ' + questId)
         quest = quests[parseInt(questId)]
+        console.log('quest : ' + quest.id)
+        console.log(quest)
+        console.log('quest.nbContributions:' + quest.nbContributions)
     }
-    notificationOff('Loading all current contributions')
+    notification('Loading all current contributions')
     contributions = []
-    nbContribs = quest.nbContributions //await contract.methods.getQuestNbContribs[questId].call()
+    console.log('nbContribs:' + nbContribs)
+    nbContribs = quest.nbContributions
+    console.log('nbContribs:' + nbContribs)
     for (let _contribQuestId = 0 ; _contribQuestId < nbContribs ; _contribQuestId++) {
         try {
             let _contribId =  await contract.methods.getContribId(_questId, _contribQuestId).call()
@@ -366,6 +373,7 @@ const getAllContributions = async function (_questId) {
         //Rending all contributions from QuestId
 const renderContributionsList = async function (_questId) {
     try {
+        _questId = parseInt(_questId)
         await getAllContributions(_questId)
         if (nbContribs == 0) {
             notification('No contribution found')
@@ -455,13 +463,14 @@ const storeContribution = async function (_newContrib) {
         await contract.methods.createContribution(questId, _newContrib.title, _newContrib.content)
             .send({ from: kit.defaultAccount})
         notification("New Contribution stored on chain")
-        await getAllContributions(questId)
+        await renderContributionsList(questId)
     } catch (error) {
         notification(`⚠️ ${error}.`)
     }
 }
 
 async function renderQuestsList() {
+    await getAllQuests()
     document.getElementById("celoquest").innerHTML = ""
     for (const _quest of quests) {
         const newDiv = document.createElement("div")
@@ -473,7 +482,7 @@ async function renderQuestsList() {
     for (const _contribBtn of _seeContribList) {
         let _questId = parseInt(_contribBtn.querySelector('#questId').textContent)
         _contribBtn.addEventListener('click', async (e) => {
-            console.log("xl")
+            console.log(_questId)
             await renderContributionsList(parseInt(_questId))
         })
     }
@@ -499,7 +508,7 @@ window.addEventListener('load', async () => {
     await connectCeloWallet()
     await getBalance()
     await getUser()
-    await getAllQuests()
+    await renderQuestsList()
 
     const listContribBtns = document.querySelector('#celoquest').querySelectorAll('#seeContribBtn')
     listContribBtns.forEach(_btn => {
@@ -512,7 +521,7 @@ window.addEventListener('load', async () => {
                     }
                 }
                 notification('Loading Contribs')
-                await getAllContributions(_questId)
+                await renderContributionsList(_questId)
                 notificationOff()
             } catch (error) {
                 notification(`⚠️ ${error}.`)
@@ -549,7 +558,6 @@ document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
             }
             await storeQuest(_newQuest)
             notification("Quest recorded on Chain !")
-            await getAllQuests()
             await renderQuestsList()
             notificationOff()
         } catch (error) {
@@ -575,6 +583,7 @@ document.querySelector("#newContribBtn").addEventListener("click", async (e) => 
             nbVotes:        0,
         }
         await storeContribution(_newContrib)
+        await renderContributionsList(questId)
     } catch (error) {
         notification(`⚠️ ${error}.`)
     }

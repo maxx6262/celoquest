@@ -391,9 +391,9 @@ contract Celoquest {
             _title,
             _content,
             0);
-        quests[_questId].nbContributions++;
         quests[_questId].contributions[quests[_questId].nbContributions] = nbContributions;
         quests[_questId].userContribution[msg.sender] = nbContributions;
+        quests[_questId].nbContributions++;
         userContributionsCount[msg.sender]++;
         nbContributions++;
     }
