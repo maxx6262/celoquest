@@ -297,7 +297,8 @@ const questHeaderTemplate = function (_questId) {
                     </p>
                 </div>
                 <br>
-            </div>`)
+            </div>
+            <br>`)
     } catch (error) {
         notification(`⚠️ ${error}.`)
     }
@@ -382,7 +383,7 @@ const renderContributionsList = async function (_questId) {
         document.getElementById('celoquest').innerHTML = ""
 
         let newHead = document.createElement("div")
-        newHead.className = "col-md-8 questHeader"
+        newHead.className = "col-md-12 questHeader"
         newHead.innerHTML = await questHeaderTemplate(_questId)
         newHead.querySelector("#questListBtn").addEventListener('click', async (e) => {
             try {
@@ -543,6 +544,7 @@ window.addEventListener('load', async () => {
             }
         })
     })
+    contributions = []
     notificationOff()
 });
 
