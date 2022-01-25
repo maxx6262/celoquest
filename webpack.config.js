@@ -13,10 +13,10 @@ module.exports = {
     path: path.resolve(process.cwd(), "docs"),
     publicPath: ""
   },
-	node: {
-   fs: "empty",
-	 net: "empty"
-	},
+  node: {
+    fs: "empty",
+    net: "empty"
+  },
   watchOptions: {
     // ignored: /node_modules/,
     aggregateTimeout: 300, // After seeing an edit, wait .3 seconds to recompile
