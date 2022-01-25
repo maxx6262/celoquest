@@ -313,8 +313,13 @@ const questHeaderTemplate = function (_questId) {
 
 
 
-function contribTemplate(_contrib) {
-    return `<div class="card mb4 contrib contribCard">
+async function contribTemplate(_contrib) {
+    console.log('quest:' + questId)
+    console.log(quest)
+    console.log('quests :')
+    console.log(quests)
+    let isOwner = quest.owner == kit.defaultAccount
+    let rep = `<div class="card mb4 contrib contribCard">
                 <div class="card-body text-left p-4 position-relative">
                     <div class="translate-middle-y position-absolute top-0">
                         ${identiconTemplate(_contrib.owner)}    
@@ -325,18 +330,29 @@ function contribTemplate(_contrib) {
                         ${_contrib.content}             
                     </p>    
                     <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
-                    </div>
-                    <button class=btn btn-dark voteBtn"
-                           onclick='voteContrib(${_contrib.id})'
-                    > 
-                        Vote 
-                    </button>
-                                
-                    <div class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3"
+                    </div>`
+    if (isOwner) {
+        rep +=      `<div class="btn btn-lg btn-outline-dark contributionBtn"
+                            style="background: lightgreen">
+                        <button class=btn btn-dark setWinner"> 
+                            <div id="contributionId" hidden> ${_contrib.id} </div>
+                            Set Winner 
+                        </button>
+                    </div>`
+    } else {
+        rep +=     `<div class="btn btn-lg btn-outline-dark contributionBtn">
+                        <button class=btn btn-dark voteBtn">
+                            <div id="contributionId" hidden> ${_contrib.id} </div>
+                            Vote Contrib
+                        </button>
+                    </div>`
+    }
+    rep +=         `<div class="data contributionBtn fs-6 p-3"
                         <strong> <span datatype="int"> ${_contrib.nbVotes}</span> votes </strong>
                     </div>
                 </div>
             </div>`
+    return rep
 }
 
 //Get all contributions async function
@@ -403,16 +419,31 @@ const renderContributionsList = async function (_questId) {
         })
 
         document.getElementById('celoquest').appendChild(newHead)
-        contributions.forEach(_contrib => {
+        contributions.forEach(async _contrib => {
             try {
                 const newDiv = document.createElement("div")
                 newDiv.className = "col-md-4 contribBlock"
-                newDiv.innerHTML = contribTemplate(_contrib)
+                let _contribTemplate = await contribTemplate(_contrib)
+                newDiv.innerHTML = _contribTemplate
                 document.getElementById('celoquest').appendChild(newDiv)
                 notificationOff()
             } catch (error) {
                 notification(`⚠️ ${error}.`)
             }
+        })
+    } catch (error) {
+        notification(`⚠️ ${error}.`)
+    }
+    try {
+        let _listVoteBtn = document.querySelector('#celoquest').querySelectorAll('voteBtb')
+        _listVoteBtn.forEach(_voteBtn => {
+            let _contribId = parseInt(_voteBtn.querySelector('#contributionId').textContent)
+            _voteBtn.addEventListener('click', async (e) => {
+                notification('Storing Vote')
+                await voteContrib(_contribId)
+                notificationOff()
+                await getAllContributions(_questId)
+            })
         })
     } catch (error) {
         notification(`⚠️ ${error}.`)
