@@ -203,8 +203,9 @@ async function questTemplate(_quest) {
                 <div class="d-grid gap-2">
                     <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
                     </div> `
-    let _hasContribute = await contract.methods.hasContribute(_quest.id, kit.defaultAccount).call()
-    if (_quest.isActive && !(_hasContribute)) {
+    let isQuestOwner = _quest.owner == kit.defaultAccount
+    let canContribute = ( !(isQuestOwner) && _quest.isActive && !( await contract.methods.hasContribute(_quest.id, kit.defaultAccount).call()))
+    if (canContribute) {
         rep +=
                    `<a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" 
                        data-bs-toggle="modal"
@@ -217,9 +218,15 @@ async function questTemplate(_quest) {
                     </a>`
     }
     else {
+        if (isQuestOwner) {
+            rep += `<a class="btn btn-lg btn-outline-dark fs-6 p-3" id="seeContribBtn"
+                    style="background-color: lightgreen">`
+        }else {
+            rep += `<a class="btn btn-lg btn-outline-dark fs-6 p-3" id="seeContribBtn"
+                    > `
+        }
         rep +=
-                   `<a class="btn btn-lg btn-outline-dark fs-6 p-3" id="seeContribBtn"
-                    >   
+                   `
                         <div id="questId" style="display: none"> ${_quest.id} </div>
                         See ${_quest.nbContributions} contributions 
                     </a> 
