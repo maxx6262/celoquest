@@ -150,24 +150,6 @@
       {
         "inputs": [
           {
-            "internalType": "address payable",
-            "name": "_to",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "_amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "_sendCUsdToken",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
             "internalType": "uint256",
             "name": "_newAmount",
             "type": "uint256"
@@ -437,14 +419,19 @@
             "internalType": "uint256",
             "name": "_questId",
             "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "_sender",
+            "type": "address"
           }
         ],
-        "name": "getWinningContribution",
+        "name": "hasContribute",
         "outputs": [
           {
-            "internalType": "uint256",
+            "internalType": "bool",
             "name": "",
-            "type": "uint256"
+            "type": "bool"
           }
         ],
         "stateMutability": "view",
@@ -463,7 +450,7 @@
             "type": "address"
           }
         ],
-        "name": "hasContribute",
+        "name": "hasVote",
         "outputs": [
           {
             "internalType": "bool",
@@ -649,6 +636,19 @@
       {
         "inputs": [
           {
+            "internalType": "uint256",
+            "name": "_contribId",
+            "type": "uint256"
+          }
+        ],
+        "name": "setWinner",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
             "internalType": "address",
             "name": "_from",
             "type": "address"
@@ -665,19 +665,6 @@
           }
         ],
         "name": "transferQuestToken",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "_questId",
-            "type": "uint256"
-          }
-        ],
-        "name": "withdrawReward",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -735,12 +722,6 @@
             "_questId": ": id of quest"
           }
         },
-        "getWinningContribution(uint256)": {
-          "details": "Get present contribution having the more votes       in case of equality, first contribution is winning",
-          "params": {
-            "_questId": "quest id we would get winning contribution"
-          }
-        },
         "hasContribute(uint256,address)": {
           "details": "Test existence of sender's past contribution",
           "params": {
@@ -748,6 +729,21 @@
           },
           "returns": {
             "_0": "true if contribution from sender for quest found"
+          }
+        },
+        "hasVote(uint256,address)": {
+          "details": "User can vote only once per quest",
+          "params": {
+            "_questId": "ID of quest"
+          },
+          "returns": {
+            "_0": "bool true if user has maked vote"
+          }
+        },
+        "newVote(uint256)": {
+          "details": "store newVote on chain (each active user can vote once per quest he contributed on",
+          "params": {
+            "_contributionId": ": Contribution user is voting for"
           }
         },
         "readContribution(uint256)": {
@@ -768,10 +764,10 @@
             "_newPseudo": ": User pseudo"
           }
         },
-        "withdrawReward(uint256)": {
-          "details": "As quest being closed, when Vote time deadline is reached,           contract will pay reward to owner of winning contribution",
+        "setWinner(uint256)": {
+          "details": "By setting winner, quest's owner disable quest and lauch rewards transactions",
           "params": {
-            "_questId": "Quest being ended waiting reward payment"
+            "_contribId": ": Contrib quest's owner want to reward"
           }
         }
       },
@@ -805,11 +801,11 @@
   },
   "sources": {
     "contracts/Celoquest.sol": {
-      "keccak256": "0x510aff457197910b4c0debd8e336a500fd5429283c98c9ef7284ba414aea6379",
+      "keccak256": "0xb5190453c7856e37646632d83ed48234dd8d50e677a1583708a1b426e57b9bda",
       "license": "MIT",
       "urls": [
-        "bzz-raw://5477cde54989ead02af012aa68dd9c38306998cf7f2ee2a555148db2fb662069",
-        "dweb:/ipfs/QmdwVTqzKECeejArWy4VDGs95yhsJz82F52V4ixRzcL378"
+        "bzz-raw://211b7cf96bbe3bd95cd523bc4f9e1f8a7fd1813fa7919462b75443aa404fdf58",
+        "dweb:/ipfs/QmdAp1sovDrAv3Hz5JpZLHLrfrecJ9zUZqRX699F4CrKLL"
       ]
     }
   },

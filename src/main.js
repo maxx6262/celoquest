@@ -6,17 +6,17 @@ import BigNumber from "bignumber.js";
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0xbB8cAD00EAf597299c947eCD1a07af9a7Ff23e0B"
-var nbQuests
-var kit
-var contract
-var user = {}
-var quests = []
-var contributions = []
-var quest = {}
-var nbContribs
-var nbContributions
-var questId
+const celoquestContractAddress = "0x48F0Ef9bfAA913892c8eb7CA547C5e194f789dc6"
+let nbQuests
+let kit
+let contract
+let user = {}
+let quests = []
+let contributions = []
+let quest = {}
+let nbContribs
+let nbContributions
+let questId
 //***********************************************************************************************
 
     //Connec Web3 wallet to the chain
@@ -90,7 +90,7 @@ function identiconTemplate(_address) {
         //User block template
 const userTemplate = function(_address, _pseudo) {
     if (_pseudo.trim() === "") {
-        _pseudo =   "Unknown address"
+        _pseudo =   "Click to register"
     }
     return `<span id="user">
             ${identiconTemplate(_address)}
@@ -116,16 +116,11 @@ const getBalance = async function() {
 
 
 const setQuestId = async function (_questId) {
-    console.log(_questId)
-    console.log(nbQuests)
-    console.log(_questId < nbQuests)
-    console.log(quests)
     questId = parseInt(_questId)
     try {
         notification("Loading quest")
         if (questId < nbQuests) {
             quest = quests[questId]
-            console.log(quest.title)
             if (parseInt(quest.id) != parseInt(questId)) {
                 const result  = await contract.methods.readQuest(questId).call()
                 const _pseudo = await contract.methods.getPseudo(result[0]).call()
@@ -143,7 +138,6 @@ const setQuestId = async function (_questId) {
                 quests[questId] = quest
             }
         }
-        console.log(quest)
         notificationOff()
     } catch (error) {
         notification(error)
@@ -152,7 +146,6 @@ const setQuestId = async function (_questId) {
 
         //Setting current focused Quest ID
 const setQuestIdOnContribModal = async function (_questId) {
-    console.log(_questId)
     document.querySelector('#newContribModal').querySelector("#questId").innerHTML = _questId
     await setQuestId(_questId)
 }
@@ -160,6 +153,7 @@ const setQuestIdOnContribModal = async function (_questId) {
         //Get all active Quests
 const getAllQuests  = async function() {
     quests = []
+    contributions = []
     try {
         notification("Loading " + nbQuests + " stored quests")
         for (let i = 0 ; i < nbQuests ; i++) {
@@ -176,8 +170,9 @@ const getAllQuests  = async function() {
                 nbContributions:    p[5],
                 isActive:           p[6],
             }
-            console.log(_quest)
-            quests.push(_quest)
+            if (_quest.isActive) {
+                quests.push(_quest)
+            }
         }
         console.log(quests)
         notificationOff()
@@ -204,7 +199,8 @@ async function questTemplate(_quest) {
                     <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
                     </div> `
     let isQuestOwner = _quest.owner == kit.defaultAccount
-    let canContribute = ( !(isQuestOwner) && _quest.isActive && !( await contract.methods.hasContribute(_quest.id, kit.defaultAccount).call()))
+    let canContribute = ( !(isQuestOwner) && _quest.isActive
+            && !( await contract.methods.hasContribute(_quest.id, kit.defaultAccount).call()))
     if (canContribute) {
         rep +=
                    `<a class="btn btn-lg btn-outline-dark contributionBtn fs-6 p-3" 
@@ -221,7 +217,7 @@ async function questTemplate(_quest) {
         if (isQuestOwner) {
             rep += `<a class="btn btn-lg btn-outline-dark fs-6 p-3" id="seeContribBtn"
                     style="background-color: lightgreen">`
-        }else {
+        } else {
             rep += `<a class="btn btn-lg btn-outline-dark fs-6 p-3" id="seeContribBtn"
                     > `
         }
@@ -266,21 +262,32 @@ const storeQuest = async function (_newQuest) {
         //Vote on contrib
 const voteContrib = async function (_contribId) {
     try {
+        _contribId = parseInt(_contribId)
         notification("Adding new Vote on Chain")
-        const result = await contract.methods.newVote(_contribId)
-            .send({from: kit.defaultAccount})
-            .then(notificationOff)
+        await contract.methods.newVote(_contribId)
+            .send({ from: kit.defaultAccount})
     } catch (error) {
         notification(`⚠️ ${error}.`)
     }
 }
 
+      //Set Winning contribution
+const setWinner = async function (_contribId) {
+    try {
+        _contribId = parseInt(_contribId)
+        notification("sending on chain")
+        await contract.methods.setWinner(_contribId)
+            .send({ from: kit.defaultAccount})
+    } catch (error) {
+        notification(`⚠️ ${error}.`)
+    }
+}
 
 const questHeaderTemplate = function (_questId) {
     try {
         if  (questId != _questId) {
             notification('Loading Quest Header')
-            loadQuest(_questId)
+            loadQuest(parseInt(_questId))
             notificationOff()
         }
         return (
@@ -300,7 +307,7 @@ const questHeaderTemplate = function (_questId) {
                     <h2> ${quest.title} </h2>
                     <h3> ${quest.content} </h3>
                     <p>
-                        List of ${quest.nbContributions} 
+                        List of ${quest.nbContributions} contributions
                     </p>
                 </div>
                 <br>
@@ -314,11 +321,9 @@ const questHeaderTemplate = function (_questId) {
 
 
 async function contribTemplate(_contrib) {
-    console.log('quest:' + questId)
-    console.log(quest)
-    console.log('quests :')
-    console.log(quests)
-    let isOwner = quest.owner == kit.defaultAccount
+    let isQuestOwner = quest.owner == kit.defaultAccount
+    let canVote = !(await contract.methods.hasVote(questId, kit.defaultAccount).call())
+        && _contrib.owner != kit.defaultAccount
     let rep = `<div class="card mb4 contrib contribCard">
                 <div class="card-body text-left p-4 position-relative">
                     <div class="translate-middle-y position-absolute top-0">
@@ -331,21 +336,23 @@ async function contribTemplate(_contrib) {
                     </p>    
                     <div class="position-absolute top-0 end-0 bg-warning mt-4 px-2 py-1 rounded-start">
                     </div>`
-    if (isOwner) {
-        rep +=      `<div class="btn btn-lg btn-outline-dark contributionBtn"
+    if (isQuestOwner) {
+        rep +=      `<div class="btn btn-lg btn-outline-dark setWinner"
                             style="background: lightgreen">
-                        <button class=btn btn-dark setWinner"> 
+                        <button class="btn btn-dark" id="setWinnerBtn"> 
                             <div id="contributionId" hidden> ${_contrib.id} </div>
                             Set Winner 
                         </button>
                     </div>`
     } else {
-        rep +=     `<div class="btn btn-lg btn-outline-dark contributionBtn">
-                        <button class=btn btn-dark id="voteBtn">
-                            <div id="contributionId" hidden> ${_contrib.id} </div>
-                            Vote Contrib
-                        </button>
+        if (canVote) {
+            rep += `<div class="btn btn-lg btn-outline-dark voteContribBtn">
+                            <button class="btn btn-dark" id="voteBtn">
+                                <div id="contributionId" hidden> ${_contrib.id} </div>
+                                Vote Contrib
+                            </button>
                     </div>`
+        }
     }
     rep +=         `<div class="data contributionBtn fs-6 p-3"
                         <strong> <span datatype="int"> ${_contrib.nbVotes}</span> votes </strong>
@@ -359,19 +366,12 @@ async function contribTemplate(_contrib) {
 const getAllContributions = async function (_questId) {
     _questId = parseInt(_questId)
     if (parseInt(questId) != parseInt(_questId)) {
-        console.log('setQuestId to ' + _questId)
         await setQuestId(_questId)
-        console.log('questId = ' + questId)
         quest = quests[parseInt(questId)]
-        console.log('quest : ' + quest.id)
-        console.log(quest)
-        console.log('quest.nbContributions:' + quest.nbContributions)
     }
     notification('Loading all current contributions')
-    contributions = []
-    console.log('nbContribs:' + nbContribs)
+    let _contributions = []
     nbContribs = quest.nbContributions
-    console.log('nbContribs:' + nbContribs)
     for (let _contribQuestId = 0 ; _contribQuestId < nbContribs ; _contribQuestId++) {
         try {
             let _contribId =  await contract.methods.getContribId(_questId, _contribQuestId).call()
@@ -387,22 +387,28 @@ const getAllContributions = async function (_questId) {
                 nbVotes:        _contribRep[4],
             }
             console.log(_contrib)
-            contributions.push(_contrib)
+            _contributions.push(_contrib)
         } catch (error) {
             notification(`⚠️ ${error}.`)
         }
     }
+    contributions = _contributions
     console.log(contributions)
 }
         //Rending all contributions from QuestId
 const renderContributionsList = async function (_questId) {
     try {
         _questId = parseInt(_questId)
+        contributions = []
         await getAllContributions(_questId)
         if (nbContribs == 0) {
             notification('No contribution found')
             return
         }
+
+        let isQuestOwner    =   quest.owner == kit.defaultAccount
+        let hasVote         =   await contract.methods.hasVote(_questId, kit.defaultAccount).call()
+
         document.getElementById('celoquest').innerHTML = ""
 
         let newHead = document.createElement("div")
@@ -420,36 +426,48 @@ const renderContributionsList = async function (_questId) {
         })
 
         document.getElementById('celoquest').appendChild(newHead)
-        contributions.forEach(async _contrib => {
+
+        for (let i_contrib = 0; i_contrib < contributions.length; i_contrib++) {
             try {
+                let _contrib = contributions[i_contrib]
+
+                let isContribOwner  = _contrib.owner == kit.defaultAccount
+                let canVote         = !(isContribOwner || hasVote || isQuestOwner)
+
                 const newDiv = document.createElement("div")
                 newDiv.className = "col-md-4 contribBlock"
-                let _contribTemplate = await contribTemplate(_contrib)
-                newDiv.innerHTML = _contribTemplate
-                document.getElementById('celoquest').appendChild(newDiv)
-                notificationOff()
+                newDiv.innerHTML = await contribTemplate(_contrib)
+                if (canVote) {
+                    newDiv.querySelector('#voteBtn').addEventListener('click', async (e) => {
+                        try {
+                            notification("Storing new Vote")
+                            await voteContrib(_contrib.id)
+                            notificationOff()
+                            renderContributionsList(_contrib.questId)
+                        } catch (error) {
+                            notification(`⚠️ ${error}.`)
+                        }
+                    })
+                }
+                else {
+                    if (isQuestOwner) {
+                        newDiv.querySelector('#setWinnerBtn').addEventListener('click', async (e) => {
+                            try {
+                                notification("Quest is ending with one winner !")
+                                await setWinner(_contrib.id)
+                                notificationOff()
+                                renderQuestsList()
+                            } catch (error) {
+                                notification(`⚠️ ${error}.`)
+                            }
+                        })
+                    }
+                }
+            document.getElementById('celoquest').appendChild(newDiv)
             } catch (error) {
                 notification(`⚠️ ${error}.`)
             }
-        })
-    } catch (error) {
-        notification(`⚠️ ${error}.`)
-    }
-}
-
-const listenVoteBtn = async function() {
-    try {
-        let _listVoteBtn = document.querySelector('#celoquest').querySelectorAll('#voteBtn')
-        _listVoteBtn.forEach(async _voteBtn => {
-            let _contribId = parseInt(_voteBtn.querySelector('#contributionId').textContent)
-            console.log('_contribId: ' + _contribId)
-            _voteBtn.addEventListener('click', async (e) => {
-                notification('Storing Vote')
-                await voteContrib(_contribId)
-                notificationOff()
-                await getAllContributions(_questId)
-            })
-        })
+        }
     } catch (error) {
         notification(`⚠️ ${error}.`)
     }
@@ -470,7 +488,10 @@ const loadQuest = async function (_questId) {
             contribs: [],
             isActive: rep[6],
         }
-        contributions = []
+        if (!(_quest.isActive)) {
+            return
+        }
+        let _contributions = []
         for (let i = 0; i < _quest.nbContribs; i++) {
             try {
                 notification("Loading Contrib " + i + " /" + _quest.nbContribs)
@@ -486,12 +507,12 @@ const loadQuest = async function (_questId) {
                     content: contribRep[3],
                     nbVotes: contribRep[4],
                 }
-                contributions.push(_contrib)
+                _contributions.push(_contrib)
             } catch (error) {
                 notification(`⚠️ ${error}.`)
             }
+            contributions = _contributions
         }
-        _quest.contribs = contributions
         quest = _quest
         notificationOff()
     } catch (error) {
@@ -508,7 +529,6 @@ const storeContribution = async function (_newContrib) {
             .send({ from: kit.defaultAccount})
         notification("New Contribution stored on chain")
         await renderContributionsList(questId)
-        await listenVoteBtn()
     } catch (error) {
         notification(`⚠️ ${error}.`)
     }
@@ -528,8 +548,8 @@ async function renderQuestsList() {
         let _questId = parseInt(_contribBtn.querySelector('#questId').textContent)
         _contribBtn.addEventListener('click', async (e) => {
             console.log(_questId)
+            contributions = []
             await renderContributionsList(parseInt(_questId))
-            await listenVoteBtn()
         })
     }
 }
@@ -555,6 +575,7 @@ window.addEventListener('load', async () => {
     await getBalance()
     await getUser()
     await renderQuestsList()
+    contributions = []
 
     const listContribBtns = document.querySelector('#celoquest').querySelectorAll('#seeContribBtn')
     listContribBtns.forEach(_btn => {
@@ -566,9 +587,9 @@ window.addEventListener('load', async () => {
                         setQuestId(_questId)
                     }
                 }
+                contributions = []
                 notification('Loading Contribs')
                 await renderContributionsList(_questId)
-                await listenVoteBtn()
                 notificationOff()
             } catch (error) {
                 notification(`⚠️ ${error}.`)
@@ -632,7 +653,6 @@ document.querySelector("#newContribBtn").addEventListener("click", async (e) => 
         }
         await storeContribution(_newContrib)
         await renderContributionsList(questId)
-        await listenVoteBtn()
     } catch (error) {
         notification(`⚠️ ${error}.`)
     }
@@ -649,9 +669,9 @@ document
                     .send({from: kit.defaultAccount})
                     user = _newPseudo;
                     notification(`🎉You succesfully set pseudo "${user}" for address ${kit.defaultAccount}.`)
-                    await getUser()
                     await getBalance()
                     await renderQuestsList()
+                    await getUser()
             } catch (error) {
                 notification(`⚠️ ${error}.`)
             }

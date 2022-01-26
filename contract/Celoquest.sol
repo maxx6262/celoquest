@@ -63,7 +63,7 @@ contract Celoquest {
         emit NewQuestTokenTransfer(address(this), _to, _amount);
     }
 
-    function _sendCUsdToken(address payable _to, uint _amount) external onlyOwner {
+    function _sendCUsdToken(address payable _to, uint _amount) internal onlyOwner {
         require(IERC20Token(cUsdTokenAddress).balanceOf(address(this)) >= _amount,
             "Contract cUSD balance too low");
         IERC20Token(cUsdTokenAddress).transfer(_to, _amount);
@@ -315,6 +315,7 @@ contract Celoquest {
         }
         if (_questTokenReward > 0) {
             _transferQuestTokenFrom(msg.sender, address(this), _questTokenReward);
+            contractBalance+= _questTokenReward;
         }
         Quest storage _newQuest     =   quests[nbQuests];
         _newQuest.title             =   _title;
@@ -377,6 +378,18 @@ contract Celoquest {
     }
 
     //****************************************************************************************************/
+    //test user already gived vote in Quest
+    /** * @param _questId ID of quest
+        * @return bool true if user has maked vote
+        * @dev User can vote only once per quest
+    */
+    function hasVote(uint _questId, address _sender) public view returns(bool) {
+        require(_questId < nbQuests, "Quest not found");
+        return(quests[_questId].userVote[_sender] > 0);
+    }
+
+
+    //****************************************************************************************************/
     //Post contribution
     /** * @param _questId  ID of Quest user would contribute
         * @param _content  content of contribution
@@ -397,7 +410,9 @@ contract Celoquest {
         userContributionsCount[msg.sender]++;
         nbContributions++;
     }
-
+    /** * @param _contributionId : Contribution user is voting for
+        * @dev store newVote on chain (each active user can vote once per quest he contributed on
+    */
     function newVote(uint _contributionId) external onlyUser(msg.sender) isActive(contributions[_contributionId].questId)
     {
         require(_contributionId < nbContributions, "Contribution not found");
@@ -414,46 +429,38 @@ contract Celoquest {
         emit NewVote(_questId, _contributionId, msg.sender);
     }
 
-    /** * @param _questId quest id we would get winning contribution
-        * @dev Get present contribution having the more votes
-        *       in case of equality, first contribution is winning
-     */
-    function getWinningContribution(uint _questId) public view returns(uint) {
-        require(_questId < nbQuests, "Quest not found");
-        uint tmpWinning = quests[_questId].userVote[quests[_questId].owner];
-        //Quest owner vote count as 25% of total votation
-        uint maxVote    = contributions[tmpWinning].nbVotes + (quests[_questId].nbVotes / 4);
-        for (uint i = 0 ; i < quests[_questId].nbContributions ; i++) {
-            Contribution memory tmpContrib = contributions[quests[_questId].contributions[i]];
-            if (tmpContrib.nbVotes > maxVote) {
-                tmpWinning  =   i;
-                maxVote     =   tmpContrib.nbVotes;
-            }
+    /** * @param _contribId : Contrib quest's owner want to reward
+          @dev By setting winner, quest's owner disable quest and lauch rewards transactions
+    */
+    function setWinner(uint _contribId) external onlyUser(msg.sender) isActive(contributions[_contribId].questId) {
+        require(quests[contributions[_contribId].questId].owner == msg.sender, "Only quest owner can set winner");
+        Contribution memory _contrib = contributions[_contribId];
+        Quest storage _quest = quests[_contrib.questId];
+        _transferQuestTokenTo(
+            _contrib.owner,
+            _quest.tokenReward
+        );
+        if (_quest.cUsdReward > 0) {
+            _sendCUsdToken(
+                _contrib.owner,
+                _quest.cUsdReward
+            );
         }
-        return tmpWinning;
+        closeQuest(_quest);
     }
 
-    /** * @param _questId Quest being ended waiting reward payment
-        * @dev  As quest being closed, when Vote time deadline is reached,
-        *           contract will pay reward to owner of winning contribution
+    /** * @param _quest : quest to close
+        * @dev End of quest = main Reward distribution + bonus Reward calculate with vote system
     */
-    function withdrawReward(uint _questId) external onlyUser(msg.sender) {
-
-        /** Deleting deadline process
-                require(quests[_questId].deadLine + (1 days) <= block.timestamp,
-                    "Quest vote time is not still ended");
-        */
-        uint _winningContributionId = getWinningContribution(_questId);
-        _transferQuestTokenTo(contributions[_winningContributionId].owner,
-            quests[_questId].tokenReward);
-        IERC20Token(cUsdTokenAddress).transferFrom(
-            address(this),
-            contributions[_winningContributionId].owner,
-            quests[_questId].cUsdReward);
-        emit NewRewardPayment(contributions[_winningContributionId].owner,
-            _questId,
-            quests[_questId].tokenReward,
-            quests[_questId].cUsdReward);
-        questRewardPaid[_questId] = true;
+    function closeQuest(Quest storage _quest) internal {
+        uint _cqtReward = _quest.tokenReward + (_quest.cUsdReward * 10);
+        uint voteValue  = _cqtReward / _quest.nbVotes;
+        for (uint i = 0 ; i < _quest.nbContributions ; i++) {
+            Contribution memory _contrib = contributions[_quest.contributions[i]];
+            if (_contrib.nbVotes > 0) {
+                _mintToken(_contrib.owner, _contrib.nbVotes * voteValue);
+            }
+        }
+        _quest.isActive = false;
     }
 }
