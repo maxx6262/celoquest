@@ -341,7 +341,7 @@ async function contribTemplate(_contrib) {
                     </div>`
     } else {
         rep +=     `<div class="btn btn-lg btn-outline-dark contributionBtn">
-                        <button class=btn btn-dark voteBtn">
+                        <button class=btn btn-dark id="voteBtn">
                             <div id="contributionId" hidden> ${_contrib.id} </div>
                             Vote Contrib
                         </button>
@@ -415,7 +415,8 @@ const renderContributionsList = async function (_questId) {
                 await renderQuestsList()
                 notificationOff()
             } catch (error) {
-            notification(`⚠️ ${error}.`)        }
+                notification(`⚠️ ${error}.`)
+            }
         })
 
         document.getElementById('celoquest').appendChild(newHead)
@@ -434,10 +435,14 @@ const renderContributionsList = async function (_questId) {
     } catch (error) {
         notification(`⚠️ ${error}.`)
     }
+}
+
+const listenVoteBtn = async function() {
     try {
-        let _listVoteBtn = document.querySelector('#celoquest').querySelectorAll('voteBtb')
-        _listVoteBtn.forEach(_voteBtn => {
+        let _listVoteBtn = document.querySelector('#celoquest').querySelectorAll('#voteBtn')
+        _listVoteBtn.forEach(async _voteBtn => {
             let _contribId = parseInt(_voteBtn.querySelector('#contributionId').textContent)
+            console.log('_contribId: ' + _contribId)
             _voteBtn.addEventListener('click', async (e) => {
                 notification('Storing Vote')
                 await voteContrib(_contribId)
@@ -503,6 +508,7 @@ const storeContribution = async function (_newContrib) {
             .send({ from: kit.defaultAccount})
         notification("New Contribution stored on chain")
         await renderContributionsList(questId)
+        await listenVoteBtn()
     } catch (error) {
         notification(`⚠️ ${error}.`)
     }
@@ -523,6 +529,7 @@ async function renderQuestsList() {
         _contribBtn.addEventListener('click', async (e) => {
             console.log(_questId)
             await renderContributionsList(parseInt(_questId))
+            await listenVoteBtn()
         })
     }
 }
@@ -561,6 +568,7 @@ window.addEventListener('load', async () => {
                 }
                 notification('Loading Contribs')
                 await renderContributionsList(_questId)
+                await listenVoteBtn()
                 notificationOff()
             } catch (error) {
                 notification(`⚠️ ${error}.`)
@@ -624,6 +632,7 @@ document.querySelector("#newContribBtn").addEventListener("click", async (e) => 
         }
         await storeContribution(_newContrib)
         await renderContributionsList(questId)
+        await listenVoteBtn()
     } catch (error) {
         notification(`⚠️ ${error}.`)
     }
