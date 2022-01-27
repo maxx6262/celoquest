@@ -13,12 +13,13 @@ First Release on Githup page <a href="https://maxx6262.github.io/celoquest/"> he
 
 
 <ol>
-  <li> User can post Rewarded Quests with deadline and fixed rewards </li>
+  <li> User has to be registered by clicking on account block and setting pseudo. He gets allocation of 150 CQT (<strong> CeloQuestToken </strong>) </li>
+  <li> User can post Rewarded Quests fixed rewards in CeloQuestToken <em> (internal token distributed to new users and contributors)</em> </li>
   <li> All users can post their contributions on platform to help Quest's owner to get answer or to contribute by making interesting contributions to the project. </li>
-  <li> All users can vote for contribution they think the more rewardable. </li>
-  <li> Votation ends 1 day after contribution time</li>
-  <li> Quest's owner being also funder has special big vote counting for 25/33 % of total votation </li>
-  <li> Best contributors get their rewards </li>
+  <li> All users can vote for contribution they think the more usefull. </li>
+  <li> Quest's owner can set Winner as he'd found answer or contribution he expected </li>
+  <li> Winner get all CQT quest's owner paid </li>
+  <li> With voting calcultation, same amount of CQT is minted to all contributors with at least one vote </li>
 </ol>
 
 <p>
