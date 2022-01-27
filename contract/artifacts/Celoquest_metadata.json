@@ -150,6 +150,30 @@
       {
         "inputs": [
           {
+            "internalType": "address",
+            "name": "_from",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "_sendCUsdTokenToContract",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
             "internalType": "uint256",
             "name": "_newAmount",
             "type": "uint256"
@@ -189,6 +213,58 @@
         "name": "_withdrawQuestToken",
         "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "contractCQTBalance",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "contractCUsdBalance",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "cqtCurrentSupply",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "cqtMaxSupply",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
         "type": "function"
       },
       {
@@ -801,11 +877,11 @@
   },
   "sources": {
     "contracts/Celoquest.sol": {
-      "keccak256": "0xb5190453c7856e37646632d83ed48234dd8d50e677a1583708a1b426e57b9bda",
+      "keccak256": "0x59f6cbe5c9e0097e899c1263daa2c2d178cf04e3c1b500a17f021a37746bf954",
       "license": "MIT",
       "urls": [
-        "bzz-raw://211b7cf96bbe3bd95cd523bc4f9e1f8a7fd1813fa7919462b75443aa404fdf58",
-        "dweb:/ipfs/QmdAp1sovDrAv3Hz5JpZLHLrfrecJ9zUZqRX699F4CrKLL"
+        "bzz-raw://d266773c0de2f04d11f7b8ed8f9cdb511e4434853926e762dde1826b61c9d087",
+        "dweb:/ipfs/QmXXd9tDWgXM3orcBBShrZdUZeziDg1mGTVhRsrpHa8EMm"
       ]
     }
   },

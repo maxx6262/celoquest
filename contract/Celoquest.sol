@@ -69,6 +69,30 @@ contract Celoquest {
         IERC20Token(cUsdTokenAddress).transfer(_to, _amount);
     }
 
+    function _sendCUsdTokenToContract(address _from, uint _amount) public payable returns(bool) {
+        require(IERC20Token(cUsdTokenAddress).balanceOf(_from) >= _amount,
+            "Sender cUSD balance too low !");
+        require(IERC20Token(cUsdTokenAddress).transferFrom(_from, payable(address(this)), _amount),
+            "Transfer failed");
+        return true;
+    }
+
+    function contractCUsdBalance() public view returns(uint) {
+        return(IERC20Token(cUsdTokenAddress).balanceOf(address(this)));
+    }
+
+    function contractCQTBalance() public view returns(uint) {
+        return(contractBalance);
+    }
+
+    function cqtCurrentSupply() public view returns(uint) {
+        return(currentSupply);
+    }
+
+    function cqtMaxSupply() public view returns(uint) {
+        return(maxTokenSupply);
+    }
+
     function _setNewInitialQuestTokenBalance(uint _newAmount) external onlyOwner {
         require(_newAmount >= 0, "new initial amount has to be > 0");
         initialUserTokenBalance = _newAmount;
@@ -311,7 +335,8 @@ contract Celoquest {
         require(_cUsdReward + _questTokenReward > 0, "Quest must have reward amount");
         require(tokenBalance[msg.sender] >= _questTokenReward, "QuestToken balance too low");
         if (_cUsdReward > 0) {
-            require(IERC20Token(cUsdTokenAddress).transferFrom(msg.sender, payable(address(this)), _cUsdReward), "Error during cUsd transaction");
+            require(IERC20Token(cUsdTokenAddress).transferFrom(msg.sender, payable(address(this)), _cUsdReward) ,
+                "Error during cUsd transaction");
         }
         if (_questTokenReward > 0) {
             _transferQuestTokenFrom(msg.sender, address(this), _questTokenReward);
@@ -446,7 +471,10 @@ contract Celoquest {
                 _quest.cUsdReward
             );
         }
-        closeQuest(_quest);
+        if (_quest.nbVotes > 0) {
+            closeQuest(_quest);
+        }
+        _quest.isActive = false;
     }
 
     /** * @param _quest : quest to close
