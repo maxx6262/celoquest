@@ -6,7 +6,7 @@ import BigNumber from "bignumber.js";
 const ERC20_DECIMALS = 18
 
     //Contract address on Celo Testnet Chain
-const celoquestContractAddress = "0x48F0Ef9bfAA913892c8eb7CA547C5e194f789dc6"
+const celoquestContractAddress = "0x724D5fa4c11C9aeBd07b05388F57586D8d11E3B2"
 let nbQuests
 let kit
 let contract
@@ -34,8 +34,11 @@ const connectCeloWallet = async function () {
             kit.defaultAccount = accounts[0]
 
             contract = new web3.eth.Contract(CeloquestAbi, celoquestContractAddress)
+            //const cUSDcontract = await kit.contracts.getStableToken()
+
             nbQuests = await contract.methods.getNbQuests().call()
             nbContributions = await contract.methods.getNbContributions().call()
+            nbContribs = 0
         } catch (error) {
             notification(`⚠️ ${error}.`)
         }
@@ -135,7 +138,7 @@ const setQuestId = async function (_questId) {
                     nbContributions:    result[5],
                     isActive:           result[6],
                 }
-                quests[questId] = quest
+                nbContribs = quest.nbContributions
             }
         }
         notificationOff()
@@ -209,8 +212,9 @@ async function questTemplate(_quest) {
                        onclick="setQuestOnNewContribModal(${_quest.id})"
                     > 
                         <div id="questId" style="display: none"> ${_quest.id} </div>
-                            Contribute to get ${_quest.cUsdReward} cUSD
-                            and ${_quest.cqtReward} CQT
+                            Contribute to get 
+                                <!--${_quest.cUsdReward} cUSD and -->
+                             ${_quest.cqtReward} CQT
                     </a>`
     }
     else {
@@ -227,8 +231,9 @@ async function questTemplate(_quest) {
                         See ${_quest.nbContributions} contributions 
                     </a> 
                     <p>
-                        Reward = <strong> ${_quest.cUsdReward} cUSD </strong>
-                        and  <strong> ${_quest.cqtReward} CQT </strong>
+                        <!-- Reward = <strong> ${_quest.cUsdReward} cUSD </strong> 
+                            and -->
+                          <strong> Reward =  ${_quest.cqtReward} CQT </strong>
                     </p>`
     }
     rep +=
@@ -240,11 +245,18 @@ async function questTemplate(_quest) {
 
 const storeQuest = async function (_newQuest) {
     try {
-        notification("Adding New Quest")
+        /* if (_newQuest.cUsdReward > 0) {
+            notification("Paying cUSD Reward")
+            let cUsdTx = await cUSDcontract
+                .transfer(payable(celoquestContractAddress), _newQuest.cUsdReward)
+                .send({ from: kit.defaultAccount})
+            notification(cUsdTx)
+        } */
+        notification("Creating Quest on chain")
         await contract.methods.createQuest(
             _newQuest.title,
             _newQuest.content,
-            _newQuest.cUsdReward,
+            0, //_newQuest.cUsdReward,
             _newQuest.cqtReward
         ).send({from: _newQuest.owner})
         notification("New Quest stored on chain")
@@ -365,9 +377,19 @@ async function contribTemplate(_contrib) {
 //Get all contributions async function
 const getAllContributions = async function (_questId) {
     _questId = parseInt(_questId)
-    if (parseInt(questId) != parseInt(_questId)) {
-        await setQuestId(_questId)
-        quest = quests[parseInt(questId)]
+    await setQuestId(_questId)
+    const _quest_result = await contract.methods.readQuest(_questId).call()
+    let _questPseudo = await getPseudo(_quest_result[0])
+    quest = {
+        id:                 _questId,
+        owner:              _quest_result[0],
+        pseudo:             _questPseudo,
+        title:              _quest_result[1],
+        content:            _quest_result[2],
+        cUsdReward:         _quest_result[3],
+        cqtReward:          _quest_result[4],
+        nbContributions:    _quest_result[5],
+        isActive:           _quest_result[6],
     }
     notification('Loading all current contributions')
     let _contributions = []
@@ -393,6 +415,7 @@ const getAllContributions = async function (_questId) {
         }
     }
     contributions = _contributions
+    nbContribs = contributions.length
     console.log(contributions)
 }
         //Rending all contributions from QuestId
@@ -456,7 +479,7 @@ const renderContributionsList = async function (_questId) {
                                 notification("Quest is ending with one winner !")
                                 await setWinner(_contrib.id)
                                 notificationOff()
-                                renderQuestsList()
+                                await renderQuestsList()
                             } catch (error) {
                                 notification(`⚠️ ${error}.`)
                             }
@@ -484,17 +507,16 @@ const loadQuest = async function (_questId) {
             pseudo: _questOwnerPseudo,
             title: rep[1],
             content: rep[2],
-            nbContribs: rep[5],
-            contribs: [],
+            nbContributionss: rep[5],
             isActive: rep[6],
         }
         if (!(_quest.isActive)) {
             return
         }
         let _contributions = []
-        for (let i = 0; i < _quest.nbContribs; i++) {
+        for (let i = 0; i < _quest.nbContributions; i++) {
             try {
-                notification("Loading Contrib " + i + " /" + _quest.nbContribs)
+                notification("Loading Contrib " + i + " /" + _quest.nbContributions)
                 const _contribId = await contract.methods.getContribId(_questId, i).call()
                 const contribRep = await contract.methods.readContribution(_contribId).call()
                 let _contribOwner = contribRep[1]
@@ -622,7 +644,7 @@ document.querySelector("#newQuestBtn").addEventListener("click", async(e) => {
             owner:          kit.defaultAccount,
             title:          document.getElementById('newQuestTitle').value,
             content:        document.getElementById('newQuestContent').value,
-            cUsdReward:     document.getElementById('newcUSDReward').value,
+            cUsdReward:     0, //document.getElementById('newcUSDReward').value,
             cqtReward:      document.getElementById('newCQTReward').value
             }
             await storeQuest(_newQuest)
