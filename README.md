@@ -1,4 +1,4 @@
-<h1> Rewarding contributions protocol </h1>
+<h1>Celoquest : Social Rewarding Contributions Protocol on Celo chain </h1>
 <h5> by Maxime Lecoustre </h5>
  
  <h2> Global Description </h2>
@@ -6,11 +6,11 @@
 <h3> A blockchain social media to be involved/helped about any subject </h3>
 
 <p>
-  Get <strong> answers/contribution </strong> by <em> community members</em>. Be <strong> rewarded </strong> by posting best <i>contribution</i> on the <strong>quest event</strong>.
+  Get <strong> answers/contribution </strong> by <em> community members</em>. Be <strong> rewarded </strong> by posting best <i>contribution</i> on the <strong> quest event</strong>.
 </p>
 
 First Release on Githup page <a href="https://maxx6262.github.io/celoquest/"> here </a>
-
+Smart contract on Alfajores can be found <a href="https://alfajores-blockscout.celo-testnet.org/address/0x724D5fa4c11C9aeBd07b05388F57586D8d11E3B2"> here </a>
 
 <ol>
   <li> User has to be registered by clicking on account block and setting pseudo. He gets allocation of 150 CQT (<strong> CeloQuestToken </strong>) </li>
@@ -29,7 +29,7 @@ First Release on Githup page <a href="https://maxx6262.github.io/celoquest/"> he
 
 
 <p>
-  Currently building POC on <strong> Celo blockchain </strong> (<a href="https://github.com/maxx6262/CeloQuest"> Gitbub rep here </a>
+  Currently building POC on <strong> Celo blockchain </strong> (<a href="https://github.com/maxx6262/CeloQuest"> Gitbub rep here </a>)
 </p>
   # Install 
 
